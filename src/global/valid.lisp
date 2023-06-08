@@ -19,6 +19,10 @@
   (define-type (Valid :a) (%Valid :a))
   (define (get (%Valid x)) x)
 
+  (define-instance (Eq :a => Eq (Valid :a))
+    (define (== (%Valid x) (%Valid y))
+      (== x y)))
+
   (define-class (Validatable :a :b (:a -> :b))
     (validate (:a -> (Result :b Unit))))
 
