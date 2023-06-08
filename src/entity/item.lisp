@@ -8,7 +8,7 @@
    (#:string #:coalton-library/string)
    (#:bounded #:coalton-library/math/bounded))
   (:export #:Item
-           #:get-id #:get-transaction-id #:get-category #:get-amount #:get-note
+           #:get-id #:get-transaction-id #:get-category #:get-subcategory #:get-amount #:get-note
            #:update-id #:update-transaction-id #:update-category #:update-subcategory #:update-amount #:update-note
 
            #:UniqueId #:unique-id!?
