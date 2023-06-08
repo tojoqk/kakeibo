@@ -11,7 +11,13 @@
            #:get-id #:get-transaction-id #:get-category #:get-amount #:get-note
            #:update-category #:update-subcategory #:update-amount #:update-note
 
-           #:UniqueId #:unique-id!?))
+           #:UniqueId #:unique-id!?
+           #:Error
+           #:ErrorType
+           #:NonUniqueId
+           #:CategoryIsEmpty
+           #:SubcategoryIsEmpty
+           #:InvalidAmount))
 
 (cl:in-package #:kakeibo/entity/item)
 
