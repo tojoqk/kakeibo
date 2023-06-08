@@ -51,6 +51,10 @@
   (define-type Error
     (Error (tree:Tree ErrorType)))
 
+  (define-instance (Eq Error)
+    (define (== (Error x) (Error y))
+      (== x y)))
+
   (define-type ErrorType
     (NonUniqueId)
     (CategoryIsEmpty)
