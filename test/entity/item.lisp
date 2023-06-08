@@ -27,9 +27,16 @@
         ((Tuple (DuplicatedId) (DuplicatedId)) True)
         (_ False))))
 
-  (define-type TransactionId (TransactionId))
+  (define-type TransactionId
+    (TransactionId)
+    (AnotherTransactionId))
+
   (define-instance (Eq TransactionId)
-    (define (== (TransactionId) (TransactionId)) True)))
+    (define (== x y)
+      (match (Tuple x y)
+        ((Tuple (TransactionId) (TransactionId)) True)
+        ((Tuple (AnotherTransactionId) (AnotherTransactionId)) True)
+        (_ False)))))
 
 (coalton-toplevel
   (define item (item:Item UniqueId
@@ -46,6 +53,33 @@
   (is (== (item:get-subcategory item) (Some "Subcategory")))
   (is (== (item:get-amount item) 100))
   (is (== (item:get-note item) (Some "Note"))))
+
+(define-test kakeibo/entity/item-update ()
+  (is ((.> (item:update-id DuplicatedId)
+           item:get-id
+           (== DuplicatedId))
+       item))
+  (is ((.> (item:update-transaction-id AnotherTransactionId)
+           item:get-transaction-id
+           (== AnotherTransactionId))
+       item))
+  (is ((.> (item:update-category "")
+           item:get-category
+           (== ""))
+       item))
+  (is ((.> (item:update-subcategory None)
+           item:get-subcategory
+           (== None))
+       item))
+  (is ((.> (item:update-amount -1)
+           item:get-amount
+           (== -1))
+       item))
+  (is ((.> (item:update-note None)
+           item:get-note
+           (== None))
+       item)))
+
 
 (define-test kakeibo/entity/item-validation ()
   (is (== (match (valid:valid! item)
