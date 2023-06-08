@@ -27,4 +27,5 @@
   :serial t
   :pathname "test/"
   :components ((:file "fiasco")
-               (:file "entity/date")))
+               (:file "entity/date")
+               (:file "entity/item")))
