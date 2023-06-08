@@ -7,7 +7,8 @@
   :serial t
   :pathname "src/"
   :components ((:file "class/valid")
-               (:file "entity/date")))
+               (:file "entity/date")
+               (:file "entity/item")))
 
 (asdf:defsystem #:kakeibo/test
   :description "Tests for kakeibo"
