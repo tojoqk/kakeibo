@@ -39,6 +39,14 @@
                           100
                           (Some "Note"))))
 
+(define-test kakeibo/entity/item-get ()
+  (is (== (item:get-id item) UniqueId))
+  (is (== (item:get-transaction-id item) TransactionId))
+  (is (== (item:get-category item) "Cateogry"))
+  (is (== (item:get-subcategory item) (Some "Subcategory")))
+  (is (== (item:get-amount item) 100))
+  (is (== (item:get-note item) (Some "Note"))))
+
 (define-test kakeibo/entity/item-validation ()
   (is (== (match (valid:valid! item)
             ((Ok item_) (Some (valid:get item_)))
