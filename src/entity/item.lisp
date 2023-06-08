@@ -12,12 +12,10 @@
            #:update-category #:update-subcategory #:update-amount #:update-note
 
            #:UniqueId #:unique-id!?
+
            #:Error
            #:ErrorType
-           #:NonUniqueId
-           #:CategoryIsEmpty
-           #:SubcategoryIsEmpty
-           #:InvalidAmount))
+           #:NonUniqueId #:CategoryIsEmpty #:SubcategoryIsEmpty #:InvalidAmount))
 
 (cl:in-package #:kakeibo/entity/item)
 
