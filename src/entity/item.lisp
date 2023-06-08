@@ -9,7 +9,7 @@
    (#:bounded #:coalton-library/math/bounded))
   (:export #:Item
            #:get-id #:get-transaction-id #:get-category #:get-amount #:get-note
-           #:update-category #:update-subcategory #:update-amount #:update-note
+           #:update-id #:update-transaction-id #:update-category #:update-subcategory #:update-amount #:update-note
 
            #:UniqueId #:unique-id!?
 
@@ -47,6 +47,10 @@
   (define (get-amount (Item _ _ _ _ amount _)) amount)
   (define (get-note (Item _ _ _ _ _ note)) note)
 
+  (define (update-id id (Item _ tid category subcategory amount note))
+    (Item id tid category subcategory amount note))
+  (define (update-transaction-id tid (Item id _ category subcategory amount note))
+    (Item id tid category subcategory amount note))
   (define (update-category category (Item id tid _ subcategory amount note))
     (Item id tid category subcategory amount note))
   (define (update-subcategory subcategory (Item id tid category _ amount note))
