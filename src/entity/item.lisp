@@ -9,7 +9,9 @@
    (#:bounded #:coalton-library/math/bounded))
   (:export #:Item
            #:get-id #:get-transaction-id #:get-category #:get-amount #:get-note
-           #:update-category #:update-subcategory #:update-amount #:update-note))
+           #:update-category #:update-subcategory #:update-amount #:update-note
+
+           #:UniqueId #:unique-id!?))
 
 (cl:in-package #:kakeibo/entity/item)
 
