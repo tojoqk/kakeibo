@@ -20,16 +20,16 @@
 (cl:in-package #:kakeibo/entity/item)
 
 (coalton-toplevel
-  (define-type (Item :id)
+  (define-type (Item :id :transaction-id)
     (Item :id                           ; ID
-          :id                           ; Transaction-ID
+          :transaction-id               ; Transaction-ID
           String                        ; Category
           (Optional String)             ; Subcategory
           Integer                       ; Amount
           (Optional String)             ; Note
           ))
 
-  (define-instance (Eq :id => Eq (Item :id))
+  (define-instance ((Eq :id) (Eq :tid) => Eq (Item :id :tid))
     (define (== (Item id1 tid1 category1 subcateogry1 amount1 note1)
                 (Item id2 tid2 category2 subcateogry2 amount2 note2))
       (and (== id1 id2)
@@ -94,7 +94,7 @@
     (define (<=> x y)
       (<=> (the U8 (into x)) (into y))))
 
-  (define-instance (UniqueId :id => valid:Validatable! (Item :id) Error)
+  (define-instance (UniqueId :id => valid:Validatable! (Item :id :tid) Error)
     (define (valid:validate! (Item id tid category subcategory amount note))
       (let e =
         (mconcat

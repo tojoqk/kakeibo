@@ -25,11 +25,15 @@
       (match (Tuple x y)
         ((Tuple (UniqueId) (UniqueId)) True)
         ((Tuple (DuplicatedId) (DuplicatedId)) True)
-        (_ False)))))
+        (_ False))))
+
+  (define-type TransactionId (TransactionId))
+  (define-instance (Eq TransactionId)
+    (define (== (TransactionId) (TransactionId)) True)))
 
 (coalton-toplevel
   (define item (item:Item UniqueId
-                          UniqueId
+                          TransactionId
                           "Cateogry"
                           (Some "Subcategory")
                           100
