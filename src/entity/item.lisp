@@ -29,6 +29,17 @@
           (Optional String)             ; Note
           ))
 
+  (define-instance (Eq :id => Eq (Item :id))
+    (define (== (Item id1 tid1 category1 subcateogry1 amount1 note1)
+                (Item id2 tid2 category2 subcateogry2 amount2 note2))
+      (and (== id1 id2)
+           (== tid1 tid2)
+           (== category1 category2)
+           (== category1 category2)
+           (== subcateogry1 subcateogry2)
+           (== amount1 amount2)
+           (== note1 note2))))
+
   (define (get-id (Item id _ _ _ _ _)) id)
   (define (get-transaction-id (Item _ tid _ _ _ _)) tid)
   (define (get-category (Item _ _ category _ _ _)) category)
