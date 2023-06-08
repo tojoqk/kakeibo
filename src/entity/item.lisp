@@ -15,7 +15,7 @@
 
            #:Error
            #:ErrorType
-           #:NonUniqueId #:CategoryIsEmpty #:SubcategoryIsEmpty #:InvalidAmount #:NoteIsEmpty))
+           #:DuplicatedId #:CategoryIsEmpty #:SubcategoryIsEmpty #:InvalidAmount #:NoteIsEmpty))
 
 (cl:in-package #:kakeibo/entity/item)
 
@@ -71,7 +71,7 @@
       (== x y)))
 
   (define-type ErrorType
-    (NonUniqueId)
+    (DuplicatedId)
     (CategoryIsEmpty)
     (SubcategoryIsEmpty)
     (InvalidAmount)
@@ -80,7 +80,7 @@
   (define-instance (Into ErrorType U8)
     (define (into x)
       (match x
-        ((NonUniqueId) 0)
+        ((DuplicatedId) 0)
         ((CategoryIsEmpty) 1)
         ((SubcategoryIsEmpty) 2)
         ((InvalidAmount) 3)
@@ -111,7 +111,7 @@
   (define (validate-uniquie-id! id)
     (if (unique-id!? id)
         tree:empty
-        (tree:make NonUniqueId)))
+        (tree:make DuplicatedId)))
 
   (define (validate-category category)
     (if (== (string:length category) 0)

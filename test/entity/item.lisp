@@ -47,7 +47,7 @@
   (is (valid:valid!? (item:update-note None item)))
 
   (is (== (valid:valid! (item:update-id DuplicatedId item))
-          (Err (item:Error (tree:make item:NonUniqueId)))))
+          (Err (item:Error (tree:make item:DuplicatedId)))))
   (is (== (valid:valid! (item:update-category "" item))
           (Err (item:Error (tree:make item:CategoryIsEmpty)))))
   (is (== (valid:valid! (item:update-subcategory (Some "") item))
@@ -72,7 +72,7 @@
            (item:update-amount 0)
            (item:update-note (Some ""))
            valid:valid!
-           (== (Err (item:Error (tree:make item:NonUniqueId
+           (== (Err (item:Error (tree:make item:DuplicatedId
                                            item:CategoryIsEmpty
                                            item:SubcategoryIsEmpty
                                            item:InvalidAmount
