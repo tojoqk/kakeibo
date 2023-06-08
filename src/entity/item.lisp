@@ -121,8 +121,8 @@
       (_ tree:empty)))
 
   (define (validate-amount amount)
-    (if (and (< 0 amount)
-             (< amount (into (the I32 bounded:maxbound))))
+    (if (or (< amount 0)
+            (< (into (the I32 bounded:maxbound)) amount))
         (tree:make InvalidAmount)
         tree:empty))
 
