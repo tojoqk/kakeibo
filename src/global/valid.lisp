@@ -10,7 +10,8 @@
 
    Validatable!
    validate!
-   valid!?))
+   valid!?
+   valid!))
 
 (cl:in-package #:kakeibo/global/valid)
 
