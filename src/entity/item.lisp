@@ -1,7 +1,6 @@
 (cl:defpackage #:kakeibo/entity/item
   (:use #:coalton
-        #:coalton-library/classes
-        #:kakeibo/class/writer)
+        #:coalton-library/classes)
   (:shadow #:error)
   (:local-nicknames
    (#:valid #:kakeibo/global/valid)
