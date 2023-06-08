@@ -5,7 +5,7 @@
         #:coalton-library/functions)
   (:local-nicknames
    (#:integral #:coalton-library/math/integral)
-   (#:valid #:kakeibo/class/valid))
+   (#:valid #:kakeibo/global/valid))
   (:export
    #:Date
    #:Month

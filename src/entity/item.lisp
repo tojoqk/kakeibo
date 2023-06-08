@@ -4,7 +4,7 @@
         #:kakeibo/class/writer)
   (:shadow #:error)
   (:local-nicknames
-   (#:valid #:kakeibo/class/valid)
+   (#:valid #:kakeibo/global/valid)
    (#:tree #:coalton-library/ord-tree)
    (#:string #:coalton-library/string)
    (#:bounded #:coalton-library/math/bounded))

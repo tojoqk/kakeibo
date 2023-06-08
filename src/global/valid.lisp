@@ -1,4 +1,4 @@
-(cl:defpackage #:kakeibo/class/valid
+(cl:defpackage #:kakeibo/global/valid
   (:use #:coalton
         #:coalton-library/classes)
   (:export
@@ -12,7 +12,7 @@
    validate!
    valid!?))
 
-(cl:in-package #:kakeibo/class/valid)
+(cl:in-package #:kakeibo/global/valid)
 
 (coalton-toplevel
   (define-type (Valid :a) (%Valid :a))

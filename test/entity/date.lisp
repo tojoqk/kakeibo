@@ -2,7 +2,7 @@
   (:use #:coalton-testing)
   (:local-nicknames
    (#:date #:kakeibo/entity/date)
-   (#:valid #:kakeibo/class/valid)
+   (#:valid #:kakeibo/global/valid)
    (#:result #:coalton-library/result)))
 
 (in-package #:kakeibo/test/entity/date)
