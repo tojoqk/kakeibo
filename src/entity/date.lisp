@@ -2,7 +2,8 @@
   (:use #:coalton
         #:coalton-library/builtin
         #:coalton-library/classes
-        #:coalton-library/functions)
+        #:coalton-library/functions
+        #:kakeibo/global/transformer/result)
   (:local-nicknames
    (#:integral #:coalton-library/math/integral)
    (#:valid #:kakeibo/global/valid))
@@ -80,7 +81,7 @@
 
   (define-type DateError (InvalidDate Date))
 
-  (define-instance (valid:Validatable Date DateError)
+  (define-instance (Monad :m => valid:Validatable :m Date DateError)
     (define (valid:validate (Date y m d))
       (let valid? =
         (and (<= 0 y)
@@ -100,6 +101,8 @@
                ((October)   (<= d 31))
                ((November)  (<= d 30))
                ((December)  (<= d 31)))))
-      (if valid?
-          (Ok Unit)
-          (Err (InvalidDate (Date y m d)))))))
+      (ResultT
+       (pure
+        (if valid?
+            (Ok Unit)
+            (Err (InvalidDate (Date y m d)))))))))

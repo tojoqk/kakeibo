@@ -1,6 +1,7 @@
 (cl:defpackage #:kakeibo/entity/item
   (:use #:coalton
-        #:coalton-library/classes)
+        #:coalton-library/classes
+        #:kakeibo/global/transformer/result)
   (:shadow #:error)
   (:local-nicknames
    (#:valid #:kakeibo/global/valid)
@@ -94,22 +95,23 @@
     (define (<=> x y)
       (<=> (the U8 (into x)) (into y))))
 
-  (declare %validateM ((UniqueId :m :id) => (Item :id :tid) -> :m (Result Error Unit)))
-  (define (%validateM (Item id _ category subcategory amount note))
-    (do (e <-
-           (map mconcat
-                (sequence (make-list
-                           (validate-unique-id id)
-                           (validate-category category)
-                           (validate-subcategory subcategory)
-                           (validate-amount amount)
-                           (validate-note note)))))
-        (pure (if (== tree:empty e)
-                  (Ok Unit)
-                  (Err (Error e))))))
+  (declare %validate ((UniqueId :m :id) => (Item :id :tid) -> (ResultT Error :m Unit)))
+  (define (%validate (Item id _ category subcategory amount note))
+    (ResultT
+     (do (e <-
+            (map mconcat
+                 (sequence (make-list
+                            (validate-unique-id id)
+                            (validate-category category)
+                            (validate-subcategory subcategory)
+                            (validate-amount amount)
+                            (validate-note note)))))
+         (if (== tree:empty e)
+             (pure (Ok Unit))
+             (pure (Err (Error e)))))))
 
-  (define-instance ((UniqueId :m :id) => valid:ValidatableM :m (Item :id :tid) Error)
-    (define valid:validateM %validateM))
+  (define-instance ((UniqueId :m :id) => valid:Validatable :m (Item :id :tid) Error)
+    (define valid:validate %validate))
 
   (define (validate-unique-id id)
     (do (b <- (unique-id? id))
@@ -146,6 +148,4 @@
         (if (== (string:length note_) 0)
             (tree:make NoteIsEmpty)
             tree:empty))
-       (_ tree:empty))))
-
-  )
+       (_ tree:empty)))))

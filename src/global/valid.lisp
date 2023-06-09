@@ -1,6 +1,7 @@
 (cl:defpackage #:kakeibo/global/valid
   (:use #:coalton
-        #:coalton-library/classes)
+        #:coalton-library/classes
+        #:kakeibo/global/transformer/result)
   (:local-nicknames
    (#:result #:coalton-library/result))
   (:export
@@ -25,33 +26,11 @@
     (define (== (%Valid x) (%Valid y))
       (== x y)))
 
-  (define-class (Validatable :a :b (:a -> :b))
-    (validate (:a -> (Result :b Unit))))
+  (define-class (Validatable :m :a :b (:a -> :b))
+    (validate (:a -> (ResultT :b :m Unit))))
 
-  (declare valid (Validatable :a :b => :a -> (Result :b (Valid :a))))
+  (declare valid ((Monad :m) (Validatable :m :a :b) => :a -> (ResultT :b :m (Valid :a))))
   (define (valid x)
     (>>= (validate x)
          (fn ((Unit))
-           (pure (%Valid x)))))
-
-  (define (valid? x)
-    (match (validate x)
-      ((Ok (Unit)) True)
-      ((Err _) False)))
-
-  (define-class (ValidatableM :m :a :b (:a -> :b))
-    (validateM (:a -> :m (Result :b Unit))))
-
-  (declare validM ((Monad :m) (ValidatableM :m :a :b) => :a -> :m (Result :b (Valid :a))))
-  (define (validM x)
-    (>>= (validateM x)
-         (fn (result)
-           (pure
-            (>>= result
-                 (fn ((Unit))
-                   (pure (%Valid x))))))))
-
-  (declare validM? ((Monad :m) (ValidatableM :m :a :b) => :a -> :m Boolean))
-  (define (validM? x)
-    (map result:ok? (validateM x)))
-  )
+           (pure (%Valid x))))))
