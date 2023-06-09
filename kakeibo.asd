@@ -6,7 +6,8 @@
   :depends-on (#:coalton)
   :serial t
   :pathname "src/"
-  :components ((:file "global/valid")
+  :components ((:file "global/transformer/monad")
+               (:file "global/valid")
                (:file "global/identity")
                (:file "entity/date")
                (:file "entity/item")))
