@@ -7,6 +7,7 @@
   :serial t
   :pathname "src/"
   :components ((:file "global/transformer/monad")
+               (:file "global/transformer/result")
                (:file "global/valid")
                (:file "global/identity")
                (:file "entity/date")
