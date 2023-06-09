@@ -7,6 +7,7 @@
   :serial t
   :pathname "src/"
   :components ((:file "global/valid")
+               (:file "global/identity")
                (:file "entity/date")
                (:file "entity/item")))
 
