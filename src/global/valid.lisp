@@ -8,13 +8,7 @@
    Valid
    get
    Validatable
-   validate
-   valid?
-
-   ValidatableM
-   validateM
-   validM?
-   validM))
+   validate))
 
 (cl:in-package #:kakeibo/global/valid)
 
