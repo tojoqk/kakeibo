@@ -1,5 +1,6 @@
 (defpackage #:kakeibo/test/entity/item
-  (:use #:coalton-testing)
+  (:use #:coalton-testing
+        #:kakeibo/global/identity)
   (:local-nicknames
    (#:valid #:kakeibo/global/valid)
    (#:item #:kakeibo/entity/item)
@@ -14,11 +15,12 @@
     (UniqueId)
     (DuplicatedId))
 
-  (define-instance (item:UniqueId ItemId)
-    (define (item:unique-id!? x)
-      (match x
-        ((UniqueId) True)
-        ((DuplicatedId) False))))
+  (define-instance (item:UniqueId Identity ItemId)
+    (define (item:unique-id? x)
+      (Identity
+       (match x
+         ((UniqueId) True)
+         ((DuplicatedId) False)))))
 
   (define-instance (Eq ItemId)
     (define (== x y)
@@ -36,7 +38,8 @@
       (match (Tuple x y)
         ((Tuple (TransactionId) (TransactionId)) True)
         ((Tuple (AnotherTransactionId) (AnotherTransactionId)) True)
-        (_ False)))))
+        (_ False))))
+  )
 
 (coalton-toplevel
   (define item (item:Item UniqueId
@@ -80,35 +83,35 @@
            (== None))
        item)))
 
-
 (define-test kakeibo/entity/item-validation ()
-  (is (== (match (valid:valid! item)
-            ((Ok item_) (Some (valid:get item_)))
+  (is (== (match (valid:validM item)
+            ((Identity (Ok item_)) (Some (valid:get item_)))
             (_ None))
-          (Some item)))
-  (is (valid:valid!? (item:update-subcategory None item)))
-  (is (valid:valid!? (item:update-amount 1 item)))
-  (is (valid:valid!? (item:update-amount 10 item)))
-  (is (valid:valid!? (item:update-amount 2147483647 item)))
-  (is (valid:valid!? (item:update-note None item)))
+           (Some item)))
+  (is (runIdentity (valid:validM? (item:update-subcategory None item))))
+  (is (runIdentity (valid:validM? (item:update-amount 1 item))))
+  (is (runIdentity (valid:validM? (item:update-amount 10 item))))
+  (is (runIdentity (valid:validM? (item:update-amount 2147483647 item))))
+  (is (runIdentity (valid:validM? (item:update-note None item))))
 
-  (is (== (valid:valid! (item:update-id DuplicatedId item))
+  (is (== (runIdentity (valid:validM (item:update-id DuplicatedId item)))
           (Err (item:Error (tree:make item:DuplicatedId)))))
-  (is (== (valid:valid! (item:update-category "" item))
+  (is (== (runIdentity (valid:validM (item:update-category "" item)))
           (Err (item:Error (tree:make item:CategoryIsEmpty)))))
-  (is (== (valid:valid! (item:update-subcategory (Some "") item))
+  (is (== (runIdentity (valid:validM (item:update-subcategory (Some "") item)))
           (Err (item:Error (tree:make item:SubcategoryIsEmpty)))))
-  (is (== (valid:valid! (item:update-amount 0 item))
+  (is (== (runIdentity (valid:validM (item:update-amount 0 item)))
           (Err (item:Error (tree:make item:InvalidAmount)))))
-  (is (== (valid:valid! (item:update-amount -10 item))
+  (is (== (runIdentity (valid:validM (item:update-amount -10 item)))
           (Err (item:Error (tree:make item:InvalidAmount)))))
-  (is (== (valid:valid! (item:update-amount 2147483648 item))
+  (is (== (runIdentity (valid:validM (item:update-amount 2147483648 item)))
           (Err (item:Error (tree:make item:InvalidAmount)))))
-  (is (== (valid:valid! (item:update-note (Some "") item))
+  (is (== (runIdentity (valid:validM (item:update-note (Some "") item)))
           (Err (item:Error (tree:make item:NoteIsEmpty)))))
   (is ((.> (item:update-category "")
            (item:update-note (Some ""))
-           valid:valid!
+           valid:validM
+           runIdentity
            (== (Err (item:Error (tree:make item:CategoryIsEmpty
                                            item:NoteIsEmpty)))))
        item))
@@ -117,10 +120,12 @@
            (item:update-subcategory (Some ""))
            (item:update-amount 0)
            (item:update-note (Some ""))
-           valid:valid!
+           valid:validM
+           runIdentity
            (== (Err (item:Error (tree:make item:DuplicatedId
                                            item:CategoryIsEmpty
                                            item:SubcategoryIsEmpty
                                            item:InvalidAmount
                                            item:NoteIsEmpty)))))
-       item)))
+       item))
+  )

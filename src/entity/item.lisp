@@ -11,7 +11,7 @@
            #:get-id #:get-transaction-id #:get-category #:get-subcategory #:get-amount #:get-note
            #:update-id #:update-transaction-id #:update-category #:update-subcategory #:update-amount #:update-note
 
-           #:UniqueId #:unique-id!?
+           #:UniqueId #:unique-id?
 
            #:Error
            #:ErrorType
@@ -60,8 +60,8 @@
   (define (update-note note (Item id tid category subcategory amount _))
     (Item id tid category subcategory amount note))
 
-  (define-class (UniqueId :id)
-    (unique-id!? (:id -> Boolean)))
+  (define-class (Monad :m => UniqueId :m :id)
+    (unique-id? (:id -> :m Boolean)))
 
   (define-type Error
     (Error (tree:Tree ErrorType)))
@@ -94,49 +94,58 @@
     (define (<=> x y)
       (<=> (the U8 (into x)) (into y))))
 
-  (define-instance (UniqueId :id => valid:Validatable! (Item :id :tid) Error)
-    (define (valid:validate! (Item id tid category subcategory amount note))
-      (let e =
-        (mconcat
-         (make-list
-          (validate-uniquie-id! id)
-          (validate-category category)
-          (validate-subcategory subcategory)
-          (validate-amount amount)
-          (validate-note note))))
-      (if (== tree:empty e)
-          (Ok Unit)
-          (Err (Error e)))))
+  (declare %validateM ((UniqueId :m :id) => (Item :id :tid) -> :m (Result Error Unit)))
+  (define (%validateM (Item id _ category subcategory amount note))
+    (do (e <-
+           (map mconcat
+                (sequence (make-list
+                           (validate-unique-id id)
+                           (validate-category category)
+                           (validate-subcategory subcategory)
+                           (validate-amount amount)
+                           (validate-note note)))))
+        (pure (if (== tree:empty e)
+                  (Ok Unit)
+                  (Err (Error e))))))
 
-  (define (validate-uniquie-id! id)
-    (if (unique-id!? id)
-        tree:empty
-        (tree:make DuplicatedId)))
+  (define-instance ((UniqueId :m :id) => valid:ValidatableM :m (Item :id :tid) Error)
+    (define valid:validateM %validateM))
+
+  (define (validate-unique-id id)
+    (do (b <- (unique-id? id))
+        (pure
+         (if b
+             tree:empty
+             (tree:make DuplicatedId)))))
 
   (define (validate-category category)
-    (if (== (string:length category) 0)
-        (tree:make CategoryIsEmpty)
-        tree:empty))
+    (pure (if (== (string:length category) 0)
+              (tree:make CategoryIsEmpty)
+              tree:empty)))
 
   (define (validate-subcategory subcategory)
-    (match subcategory
-      ((Some subcategory_)
-       (if (== (string:length subcategory_) 0)
-           (tree:make SubcategoryIsEmpty)
-           tree:empty))
-      (_ tree:empty)))
+    (pure
+     (match subcategory
+       ((Some subcategory_)
+        (if (== (string:length subcategory_) 0)
+            (tree:make SubcategoryIsEmpty)
+            tree:empty))
+       (_ tree:empty))))
 
   (define (validate-amount amount)
-    (if (or (<= amount 0)
-            (< (into (the I32 bounded:maxbound)) amount))
-        (tree:make InvalidAmount)
-        tree:empty))
+    (pure
+     (if (or (<= amount 0)
+             (< (into (the I32 bounded:maxbound)) amount))
+         (tree:make InvalidAmount)
+         tree:empty)))
 
   (define (validate-note note)
-    (match note
-      ((Some note_)
-       (if (== (string:length note_) 0)
-           (tree:make NoteIsEmpty)
-           tree:empty))
-      (_ tree:empty)))
+    (pure
+     (match note
+       ((Some note_)
+        (if (== (string:length note_) 0)
+            (tree:make NoteIsEmpty)
+            tree:empty))
+       (_ tree:empty))))
+
   )
