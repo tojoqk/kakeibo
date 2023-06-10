@@ -12,7 +12,10 @@
    #:Month
    #:January #:February #:March
    #:April #:May #:June #:July #:August #:September
-   #:October #:November #:December))
+   #:October #:November #:December
+
+   #:ErrorType
+   #:InvalidDate))
 
 (cl:in-package #:kakeibo/entity/date)
 
@@ -79,9 +82,9 @@
          (not (and (== (integral:mod y 100) 0)
                    (/= (integral:mod y 400) 0)))))
 
-  (define-type DateError (InvalidDate Date))
+  (define-type ErrorType (InvalidDate))
 
-  (define-instance (Monad :m => valid:Validatable :m Date DateError)
+  (define-instance (Monad :m => valid:Validatable :m Date ErrorType)
     (define (valid:validate (Date y m d))
       (let valid? =
         (and (<= 0 y)
@@ -105,4 +108,4 @@
        (pure
         (if valid?
             (Ok Unit)
-            (Err (InvalidDate (Date y m d)))))))))
+            (Err InvalidDate)))))))
