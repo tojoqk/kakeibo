@@ -34,4 +34,4 @@
 
   (define-instance (MonadTrans (ResultT :a))
     (define (lift m)
-      (ResultT (>>= m (fn (x) (pure (Ok x))))))))
+      (ResultT (>>= m (.< pure Ok))))))
