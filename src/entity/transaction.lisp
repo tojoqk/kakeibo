@@ -47,9 +47,24 @@
   (define (update-note note (Transaction id type date _))
     (Transaction id type date note))
 
+  (define-instance (Eq :id => Eq (Transaction :id))
+    (define (== (Transaction id1 type1 date1 note1)
+                (Transaction id2 type2 date2 note2))
+      (and (== id1 id2)
+           (== type1 type2)
+           (== date1 date2)
+           (== note1 note2))))
+
   (define-type Type
     (Income)
     (Outgo))
+
+  (define-instance (Eq Type)
+    (define (== x y)
+      (match (Tuple x y)
+        ((Tuple (Income) (Income)) True)
+        ((Tuple (Outgo) (Outgo)) True)
+        (_ False))))
 
   (define-class (Monad :m => UniqueId :m :id)
     (unique-id? (:id -> :m Boolean)))
