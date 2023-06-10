@@ -1,7 +1,8 @@
 (cl:defpackage #:kakeibo/entity/item
   (:use #:coalton
         #:coalton-library/classes
-        #:kakeibo/global/transformer/result)
+        #:kakeibo/global/transformer/result
+        #:kakeibo/global/transformer/monad)
   (:shadow #:error)
   (:local-nicknames
    (#:valid #:kakeibo/global/valid)
@@ -97,18 +98,17 @@
 
   (declare %validate ((UniqueId :m :id) => (Item :id :tid) -> (ResultT Error :m Unit)))
   (define (%validate (Item id _ category subcategory amount note))
-    (ResultT
-     (do (e <-
-            (map mconcat
-                 (sequence (make-list
-                            (validate-unique-id id)
-                            (validate-category category)
-                            (validate-subcategory subcategory)
-                            (validate-amount amount)
-                            (validate-note note)))))
-         (if (== tree:empty e)
-             (pure (Ok Unit))
-             (pure (Err (Error e)))))))
+    (do (tree <- (lift
+                  (map mconcat
+                       (sequence (make-list
+                                  (validate-unique-id id)
+                                  (validate-category category)
+                                  (validate-subcategory subcategory)
+                                  (validate-amount amount)
+                                  (validate-note note))))))
+        (if (== tree:empty tree)
+            (pure Unit)
+            (ResultT (pure (Err (Error tree)))))))
 
   (define-instance ((UniqueId :m :id) => valid:Validatable :m (Item :id :tid) Error)
     (define valid:validate %validate))
