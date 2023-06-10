@@ -45,91 +45,128 @@
   (define valid (.< runIdentity runResultT valid:valid)))
 
 (coalton-toplevel
-  (define item (item:Item UniqueId
-                          TransactionId
-                          "Cateogry"
-                          (Some "Subcategory")
-                          100
-                          (Some "Note"))))
+  (define it (item:Item UniqueId
+                        TransactionId
+                        "Cateogry"
+                        (Some "Subcategory")
+                        100
+                        (Some "Note"))))
 
 (define-test kakeibo/entity/item-get ()
-  (is (== (item:get-id item) UniqueId))
-  (is (== (item:get-transaction-id item) TransactionId))
-  (is (== (item:get-category item) "Cateogry"))
-  (is (== (item:get-subcategory item) (Some "Subcategory")))
-  (is (== (item:get-amount item) 100))
-  (is (== (item:get-note item) (Some "Note"))))
+  (is (pipe it
+            item:get-id
+            (== UniqueId)))
+  (is (pipe it
+            item:get-transaction-id
+            (== TransactionId)))
+  (is (pipe it
+            item:get-category
+            (== "Cateogry")))
+  (is (pipe it
+            item:get-subcategory
+            (== (Some "Subcategory"))))
+  (is (pipe it
+            item:get-amount
+            (== 100)))
+  (is (pipe it
+            item:get-note
+            (== (Some "Note")))))
 
 (define-test kakeibo/entity/item-update ()
-  (is ((.> (item:update-id DuplicatedId)
-           item:get-id
-           (== DuplicatedId))
-       item))
-  (is ((.> (item:update-transaction-id AnotherTransactionId)
-           item:get-transaction-id
-           (== AnotherTransactionId))
-       item))
-  (is ((.> (item:update-category "")
-           item:get-category
-           (== ""))
-       item))
-  (is ((.> (item:update-subcategory None)
-           item:get-subcategory
-           (== None))
-       item))
-  (is ((.> (item:update-amount -1)
-           item:get-amount
-           (== -1))
-       item))
-  (is ((.> (item:update-note None)
-           item:get-note
-           (== None))
-       item)))
+  (is (pipe it
+            (item:update-id DuplicatedId)
+            item:get-id
+            (== DuplicatedId)))
+  (is (pipe it
+            (item:update-transaction-id AnotherTransactionId)
+            item:get-transaction-id
+            (== AnotherTransactionId)))
+  (is (pipe it
+            (item:update-category "")
+            item:get-category
+            (== "")))
+  (is (pipe it
+            (item:update-subcategory None)
+            item:get-subcategory
+            (== None)))
+  (is (pipe it
+            (item:update-amount -1)
+            item:get-amount
+            (== -1)))
+  (is (pipe it
+            (item:update-note None)
+            item:get-note
+            (== None))))
 
 (define-test kakeibo/entity/item-validation ()
-  (is (== (match (valid item)
-            ((Ok item_) (Some (valid:get item_)))
-            (_ None))
-          (Some item)))
-  (is (nest result:ok? valid (item:update-subcategory None item)))
-  (is (nest result:ok? valid (item:update-amount 1 item)))
-  (is (nest result:ok? valid (item:update-amount 10 item)))
-  (is (nest result:ok? valid (item:update-amount 2147483647 item)))
-  (is (nest result:ok? valid (item:update-note None item)))
-
-  (is (== (valid (item:update-id DuplicatedId item))
-          (Err (item:Error (tree:make item:DuplicatedId)))))
-  (is (== (valid (item:update-category "" item))
-          (Err (item:Error (tree:make item:CategoryIsEmpty)))))
-  (is (== (valid (item:update-subcategory (Some "") item))
-          (Err (item:Error (tree:make item:SubcategoryIsEmpty)))))
-  (is (== (valid (item:update-amount 0 item))
-          (Err (item:Error (tree:make item:InvalidAmount)))))
-  (is (== (valid (item:update-amount -10 item))
-          (Err (item:Error (tree:make item:InvalidAmount)))))
-  (is (== (valid (item:update-amount 2147483648 item))
-          (Err (item:Error (tree:make item:InvalidAmount)))))
-  (is (== (valid (item:update-note (Some "") item))
-          (Err (item:Error (tree:make item:NoteIsEmpty)))))
-  (is (nest (== (Err
-                 (item:Error
-                  (tree:make item:CategoryIsEmpty
-                             item:NoteIsEmpty))))
+  (is (pipe it
             valid
+            as-optional
+            (map valid:get)
+            (== (Some it))))
+  (is (pipe it
+            (item:update-subcategory None)
+            valid result:ok?))
+  (is (pipe it
+            (item:update-amount 1)
+            valid result:ok?))
+  (is (pipe it
+            (item:update-amount 10)
+            valid result:ok?))
+  (is (pipe it
+            (item:update-amount 2147483647)
+            valid result:ok?))
+  (is (pipe it
+            (item:update-note None)
+            valid result:ok?))
+
+  (is (pipe it
+            (item:update-id DuplicatedId)
+            valid
+            (== (Err (item:Error (tree:make item:DuplicatedId))))))
+  (is (pipe it
+            (item:update-category "")
+            valid
+            (== (Err (item:Error (tree:make item:CategoryIsEmpty))))))
+  (is (pipe it
+            (item:update-subcategory (Some ""))
+            valid
+            (== (Err (item:Error (tree:make item:SubcategoryIsEmpty))))))
+  (is (pipe it
+            (item:update-amount 0)
+            valid
+            (== (Err (item:Error (tree:make item:InvalidAmount))))))
+  (is (pipe it
+            (item:update-amount -10)
+            valid
+            (== (Err (item:Error (tree:make item:InvalidAmount))))))
+  (is (pipe it
+            (item:update-amount 2147483648)
+            valid
+            (== (Err (item:Error (tree:make item:InvalidAmount))))))
+  (is (pipe it
+            (item:update-note (Some ""))
+            valid
+            (== (Err (item:Error (tree:make item:NoteIsEmpty))))))
+  (is (pipe it
             (item:update-category "")
             (item:update-note (Some ""))
-            item))
-  (is (nest (== (Err
-                 (item:Error
-                  (tree:make item:DuplicatedId
-                             item:CategoryIsEmpty
-                             item:SubcategoryIsEmpty
-                             item:InvalidAmount
-                             item:NoteIsEmpty))))
             valid
+            (== (Err
+                 (item:Error
+                  (tree:make item:CategoryIsEmpty
+                             item:NoteIsEmpty))))))
+  (is (pipe it
             (item:update-id DuplicatedId)
             (item:update-category "")
             (item:update-subcategory (Some ""))
             (item:update-amount 0)
             (item:update-note (Some ""))
-            item)))
+            valid
+            (== (Err
+                 (item:Error
+                  (tree:make item:DuplicatedId
+                             item:CategoryIsEmpty
+                             item:SubcategoryIsEmpty
+                             item:InvalidAmount
+                             item:NoteIsEmpty)))))))
