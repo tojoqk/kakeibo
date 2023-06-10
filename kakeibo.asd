@@ -11,7 +11,8 @@
                (:file "global/valid")
                (:file "global/identity")
                (:file "entity/date")
-               (:file "entity/item")))
+               (:file "entity/item")
+               (:file "entity/transaction")))
 
 (asdf:defsystem #:kakeibo/test
   :description "Tests for kakeibo"
