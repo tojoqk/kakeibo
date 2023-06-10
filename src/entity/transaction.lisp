@@ -10,7 +10,18 @@
    (#:result #:coalton-library/result)
    (#:date #:kakeibo/entity/date)
    (#:valid #:kakeibo/global/valid)
-   (#:string #:coalton-library/string)))
+   (#:string #:coalton-library/string))
+  (:export
+   #:Transaction
+   #:get-id #:get-type #:get-date #:get-note
+   #:update-id #:update-type #:update-date #:update-note
+
+   #:Type #:Income #:Outgo
+
+   #:UniqueId #:unique-id?
+
+   #:Error
+   #:ErrorType #:DuplicatedId #:InvalidDate #:NoteIsEmpty))
 
 (cl:in-package #:kakeibo/entity/transaction)
 
