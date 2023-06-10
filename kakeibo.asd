@@ -32,4 +32,5 @@
   :pathname "test/"
   :components ((:file "fiasco")
                (:file "entity/date")
-               (:file "entity/item")))
+               (:file "entity/item")
+               (:file "entity/transaction")))
