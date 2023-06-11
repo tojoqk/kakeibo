@@ -110,8 +110,6 @@
                ((October)   (<= d 31))
                ((November)  (<= d 30))
                ((December)  (<= d 31)))))
-      (ResultT
-       (pure
-        (if valid?
-            (Ok Unit)
-            (Err InvalidDate)))))))
+      (if valid?
+          (pure Unit)
+          (ResultT (pure (Err InvalidDate)))))))
