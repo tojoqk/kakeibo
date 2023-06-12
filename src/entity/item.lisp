@@ -87,21 +87,22 @@
     (InvalidAmount)
     (NoteIsEmpty))
 
-  (define-instance (Into ErrorType U8)
-    (define (into x)
-      (match x
-        ((CategoryIsEmpty) 0)
-        ((SubcategoryIsEmpty) 1)
-        ((InvalidAmount) 2)
-        ((NoteIsEmpty) 3))))
+  (define (error-type-code t)
+    (match t
+      ((CategoryIsEmpty) 0)
+      ((SubcategoryIsEmpty) 1)
+      ((InvalidAmount) 2)
+      ((NoteIsEmpty) 3)))
 
   (define-instance (Eq ErrorType)
     (define (== x y)
-      (== (the U8 (into x)) (into y))))
+      (== (error-type-code x)
+          (error-type-code y))))
 
   (define-instance (Ord ErrorType)
     (define (<=> x y)
-      (<=> (the U8 (into x)) (into y))))
+      (<=> (error-type-code x)
+           (error-type-code y))))
 
   (declare %validate (Monad :m => (Item :id :tid) -> (ResultT Error :m Unit)))
   (define (%validate (%Item _ _ category subcategory amount note))
