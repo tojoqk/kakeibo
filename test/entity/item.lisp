@@ -21,10 +21,25 @@
   (define-instance (Eq ItemId)
     (define (== (ItemId) (ItemId)) True))
 
-  (define-type TransactionId (TransactionId))
+  (define-type TransactionId
+    (ExistingTransactionId)
+    (nonExistingTransactionId))
 
   (define-instance (Eq TransactionId)
-    (define (== (TransactionId) (TransactionId)) True))
+    (define (== x y)
+      (match x
+        ((ExistingTransactionId)
+         (match y
+           ((ExistingTransactionId) True)
+           (_ False)))
+        (_ False))))
+
+  (define-instance (item:TransactionIdExistence Identity TransactionId)
+    (define (item:transaction-id-exists? tid)
+      (pure
+       (match tid
+         ((ExistingTransactionId) True)
+         ((nonExistingTransactionId) False)))))
 
   (define valid (.< runIdentity runResultT valid:valid)))
 
@@ -32,7 +47,7 @@
   (declare it (item:Item ItemId TransactionId))
   (define it
     (runIdentity
-     (item:Item TransactionId
+     (item:Item ExistingTransactionId
                 "Cateogry"
                 (Some "Subcategory")
                 100
@@ -44,7 +59,7 @@
             (== ItemId)))
   (is (pipe it
             item:get-transaction-id
-            (== TransactionId)))
+            (== ExistingTransactionId)))
   (is (pipe it
             item:get-category
             (== "Cateogry")))
@@ -98,6 +113,15 @@
             (item:update-note None)
             valid result:ok?))
 
+  (is (pipe (the (item:item ItemId TransactionId)
+                 (runIdentity
+                  (item:item nonExistingTransactionId
+                             (item:get-category it)
+                             (item:get-subcategory it)
+                             (item:get-amount it)
+                             (item:get-note it))))
+            valid
+            (== (Err (item:Error (tree:make item:TransactionIdDoesNotExist))))))
   (is (pipe it
             (item:update-category "")
             valid

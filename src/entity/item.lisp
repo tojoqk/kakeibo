@@ -20,9 +20,16 @@
            #:update-amount
            #:update-note
 
+           #:TransactionIdExistence
+           #:transaction-id-exists?
+
            #:Error
            #:ErrorType
-           #:CategoryIsEmpty #:SubcategoryIsEmpty #:InvalidAmount #:NoteIsEmpty))
+           #:TransactionIdDoesNotExist
+           #:CategoryIsEmpty
+           #:SubcategoryIsEmpty
+           #:InvalidAmount
+           #:NoteIsEmpty))
 
 (cl:in-package #:kakeibo/entity/item)
 
@@ -81,6 +88,7 @@
       (== x y)))
 
   (define-type ErrorType
+    (TransactionIdDoesNotExist)
     (CategoryIsEmpty)
     (SubcategoryIsEmpty)
     (InvalidAmount)
@@ -88,10 +96,11 @@
 
   (define (error-type-code t)
     (match t
-      ((CategoryIsEmpty) 0)
-      ((SubcategoryIsEmpty) 1)
-      ((InvalidAmount) 2)
-      ((NoteIsEmpty) 3)))
+      ((TransactionIdDoesNotExist) 0)
+      ((CategoryIsEmpty) 1)
+      ((SubcategoryIsEmpty) 2)
+      ((InvalidAmount) 3)
+      ((NoteIsEmpty) 4)))
 
   (define-instance (Eq ErrorType)
     (define (== x y)
@@ -103,11 +112,15 @@
       (<=> (error-type-code x)
            (error-type-code y))))
 
-  (declare %validate (Monad :m => (Item :id :tid) -> (ResultT Error :m Unit)))
-  (define (%validate (%Item _ _ category subcategory amount note))
+  (define-class (Monad :m => TransactionIdExistence :m :tid)
+    (transaction-id-exists? (:tid -> :m Boolean)))
+
+  (declare %validate (TransactionIdExistence :m :tid => (Item :id :tid) -> (ResultT Error :m Unit)))
+  (define (%validate (%Item _ tid category subcategory amount note))
     (do (tree <- (lift
                   (map mconcat
                        (sequence (make-list
+                                  (validate-transaction-id tid)
                                   (validate-category category)
                                   (validate-subcategory subcategory)
                                   (validate-amount amount)
@@ -116,8 +129,15 @@
             (pure Unit)
             (ResultT (pure (Err (Error tree)))))))
 
-  (define-instance (Monad :m => valid:Validatable :m (Item :id :tid) Error)
+  (define-instance (TransactionIdExistence :m :tid => valid:Validatable :m (Item :id :tid) Error)
     (define valid:validate %validate))
+
+  (define (validate-transaction-id tid)
+    (do (b <- (transaction-id-exists? tid))
+        (pure
+         (if b
+             tree:empty
+             (tree:make TransactionIdDoesNotExist)))))
 
   (define (validate-category category)
     (pure (if (== (string:length category) 0)
