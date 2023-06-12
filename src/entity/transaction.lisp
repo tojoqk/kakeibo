@@ -92,20 +92,21 @@
     (InvalidDate)
     (NoteIsEmpty))
 
-  (define-instance (Into ErrorType U8)
-    (define (into x)
-      (match x
-        ((DuplicatedId) 0)
-        ((InvalidDate) 1)
-        ((NoteIsEmpty) 2))))
+  (define (error-type-code x)
+    (match x
+      ((DuplicatedId) 0)
+      ((InvalidDate) 1)
+      ((NoteIsEmpty) 2)))
 
   (define-instance (Eq ErrorType)
     (define (== x y)
-      (== (the U8 (into x)) (into y))))
+      (== (error-type-code x)
+          (error-type-code y))))
 
   (define-instance (Ord ErrorType)
     (define (<=> x y)
-      (<=> (the U8 (into x)) (into y))))
+      (<=> (error-type-code x)
+           (error-type-code y))))
 
   (define-instance (UniqueId :m :id => valid:Validatable :m (Transaction :id) Error)
     (define (valid:validate (Transaction id _ date note))
