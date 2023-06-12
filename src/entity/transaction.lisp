@@ -25,8 +25,6 @@
    #:Income
    #:Outgo
 
-   #:UniqueId #:unique-id?
-
    #:Error
    #:ErrorType
    #:DuplicatedId
@@ -77,9 +75,6 @@
         ((Tuple (Outgo) (Outgo)) True)
         (_ False))))
 
-  (define-class (Monad :m => UniqueId :m :id)
-    (unique-id? (:id -> :m Boolean)))
-
   (define-type Error
     (Error (tree:Tree ErrorType)))
 
@@ -88,15 +83,13 @@
       (== x y)))
 
   (define-type ErrorType
-    (DuplicatedId)
     (InvalidDate)
     (NoteIsEmpty))
 
   (define (error-type-code x)
     (match x
-      ((DuplicatedId) 0)
-      ((InvalidDate) 1)
-      ((NoteIsEmpty) 2)))
+      ((InvalidDate) 0)
+      ((NoteIsEmpty) 1)))
 
   (define-instance (Eq ErrorType)
     (define (== x y)
@@ -108,24 +101,16 @@
       (<=> (error-type-code x)
            (error-type-code y))))
 
-  (define-instance (UniqueId :m :id => valid:Validatable :m (Transaction :id) Error)
+  (define-instance (Monad :m => valid:Validatable :m (Transaction :id) Error)
     (define (valid:validate (%Transaction id _ date note))
       (do (tree <- (lift
                     (map mconcat
                          (sequence
-                          (make-list (unique-id-validation id)
-                                     (date-validation date)
+                          (make-list (date-validation date)
                                      (note-validation note))))))
           (if (== tree:empty tree)
               (pure Unit)
               (ResultT (pure (Err (Error tree))))))))
-
-  (define (unique-id-validation id)
-    (do (b <- (unique-id? id))
-        (pure
-         (if b
-             tree:empty
-             (tree:make DuplicatedId)))))
 
   (define (date-validation date)
     (do (res <- (runResultT (valid:valid (the date:Date date))))

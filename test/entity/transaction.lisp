@@ -14,29 +14,16 @@
 (coalton-fiasco-init #:kakeibo-test-fiasco)
 
 (coalton-toplevel
-  (define-type TransactionId
-    (UniqueId)
-    (DuplicatedId))
-
-  (define-instance (transaction:UniqueId Identity TransactionId)
-    (define (transaction:unique-id? x)
-      (Identity
-       (match x
-         ((UniqueId) True)
-         ((DuplicatedId) False)))))
+  (define-type TransactionId (TransactionId))
 
   (define-instance (Eq TransactionId)
-    (define (== x y)
-      (match (Tuple x y)
-        ((Tuple (UniqueId) (UniqueId)) True)
-        ((Tuple (DuplicatedId) (DuplicatedId)) True)
-        (_ False))))
+    (define (== (TransactionId) (TransactionId)) True))
 
   (define valid (.< runIdentity runResultT valid:valid)))
 
 (coalton-toplevel
   (define it
-    (transaction:transaction UniqueId
+    (transaction:transaction TransactionId
                              transaction:Income
                              (date:Date 2023 date:January 1)
                              (Some "Note"))))
@@ -44,7 +31,7 @@
 (define-test kakeibo/entity/transaction-get ()
   (is (pipe it
             transaction:get-id
-            (== UniqueId)))
+            (== TransactionId)))
   (is (pipe it
             transaction:get-type
             (== transaction:Income)))
