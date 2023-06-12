@@ -10,15 +10,19 @@
    (#:string #:coalton-library/string)
    (#:bounded #:coalton-library/math/bounded))
   (:export #:Item
-           #:get-id #:get-transaction-id #:get-category #:get-subcategory #:get-amount #:get-note
-
-           #:IdGenerator
-           #:generate-id
-
+           #:get-id
+           #:get-transaction-id
+           #:get-category
+           #:get-subcategory
+           #:get-amount
+           #:get-note
            #:update-category
            #:update-subcategory
            #:update-amount
            #:update-note
+
+           #:IdGenerator
+           #:generate-id
 
            #:TransactionIdExistence
            #:transaction-id-exists?
