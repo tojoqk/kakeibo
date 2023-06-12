@@ -21,6 +21,9 @@
    #:update-date
    #:update-note
 
+   #:IdGenerator
+   #:generate-id
+
    #:Type
    #:Income
    #:Outgo
@@ -52,8 +55,15 @@
   (define (update-note note (%Transaction id type date _))
     (%Transaction id type date note))
 
-  (define (transaction id type date note)
-    (%Transaction id type date note))
+  (define-class (Monad :m => IdGenerator :m :id)
+    (generate-id (Unit -> :m :id)))
+
+  (declare transaction (IdGenerator :m :id => Type -> date:Date -> (Optional String)
+                                    -> :m (Transaction :id)))
+  (define (transaction type date note)
+    (>>= (generate-id)
+         (fn (id)
+           (pure (%Transaction id type date note)))))
 
   (define-instance (Eq :id => Eq (Transaction :id))
     (define (== (%Transaction id1 type1 date1 note1)

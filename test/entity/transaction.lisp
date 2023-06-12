@@ -19,14 +19,18 @@
   (define-instance (Eq TransactionId)
     (define (== (TransactionId) (TransactionId)) True))
 
+  (define-instance (transaction:IdGenerator Identity TransactionId)
+    (define (transaction:generate-id) (pure TransactionId)))
+
   (define valid (.< runIdentity runResultT valid:valid)))
 
 (coalton-toplevel
+  (declare it (transaction:Transaction TransactionId))
   (define it
-    (transaction:transaction TransactionId
-                             transaction:Income
-                             (date:Date 2023 date:January 1)
-                             (Some "Note"))))
+    (runIdentity
+     (transaction:transaction transaction:Income
+                              (date:Date 2023 date:January 1)
+                              (Some "Note")))))
 
 (define-test kakeibo/entity/transaction-get ()
   (is (pipe it
