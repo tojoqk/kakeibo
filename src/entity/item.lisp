@@ -63,9 +63,8 @@
   (define (update-note note (%Item id tid category subcategory amount _))
     (%Item id tid category subcategory amount note))
 
-
   (declare item (IdGenerator :m :id => :tid -> String -> (Optional String) -> Integer -> (Optional String)
-                              -> :m (Item :id :tid)))
+                             -> :m (Item :id :tid)))
   (define (item tid category subcategory amount note)
     (>>= (generate-id)
          (fn (id)
