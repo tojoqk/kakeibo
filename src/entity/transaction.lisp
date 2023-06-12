@@ -13,15 +13,26 @@
    (#:string #:coalton-library/string))
   (:export
    #:Transaction
-   #:get-id #:get-type #:get-date #:get-note
-   #:update-id #:update-type #:update-date #:update-note
+   #:get-id
+   #:get-type
+   #:get-date
+   #:get-note
+   #:update-id
+   #:update-type
+   #:update-date
+   #:update-note
 
-   #:Type #:Income #:Outgo
+   #:Type
+   #:Income
+   #:Outgo
 
    #:UniqueId #:unique-id?
 
    #:Error
-   #:ErrorType #:DuplicatedId #:InvalidDate #:NoteIsEmpty))
+   #:ErrorType
+   #:DuplicatedId
+   #:InvalidDate
+   #:NoteIsEmpty))
 
 (cl:in-package #:kakeibo/entity/transaction)
 
