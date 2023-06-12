@@ -11,29 +11,34 @@
    (#:bounded #:coalton-library/math/bounded))
   (:export #:Item
            #:get-id #:get-transaction-id #:get-category #:get-subcategory #:get-amount #:get-note
-           #:update-id #:update-transaction-id #:update-category #:update-subcategory #:update-amount #:update-note
 
-           #:UniqueId #:unique-id?
+           #:IdGenerator
+           #:generate-id
+
+           #:update-category
+           #:update-subcategory
+           #:update-amount
+           #:update-note
 
            #:Error
            #:ErrorType
-           #:DuplicatedId #:CategoryIsEmpty #:SubcategoryIsEmpty #:InvalidAmount #:NoteIsEmpty))
+           #:CategoryIsEmpty #:SubcategoryIsEmpty #:InvalidAmount #:NoteIsEmpty))
 
 (cl:in-package #:kakeibo/entity/item)
 
 (coalton-toplevel
   (define-type (Item :id :transaction-id)
-    (Item :id                           ; ID
-          :transaction-id               ; Transaction-ID
-          String                        ; Category
-          (Optional String)             ; Subcategory
-          Integer                       ; Amount
-          (Optional String)             ; Note
-          ))
+    (%Item :id                           ; ID
+           :transaction-id               ; Transaction-ID
+           String                        ; Category
+           (Optional String)             ; Subcategory
+           Integer                       ; Amount
+           (Optional String)             ; Note
+           ))
 
   (define-instance ((Eq :id) (Eq :tid) => Eq (Item :id :tid))
-    (define (== (Item id1 tid1 category1 subcateogry1 amount1 note1)
-                (Item id2 tid2 category2 subcateogry2 amount2 note2))
+    (define (== (%Item id1 tid1 category1 subcateogry1 amount1 note1)
+                (%Item id2 tid2 category2 subcateogry2 amount2 note2))
       (and (== id1 id2)
            (== tid1 tid2)
            (== category1 category2)
@@ -42,28 +47,32 @@
            (== amount1 amount2)
            (== note1 note2))))
 
-  (define (get-id (Item id _ _ _ _ _)) id)
-  (define (get-transaction-id (Item _ tid _ _ _ _)) tid)
-  (define (get-category (Item _ _ category _ _ _)) category)
-  (define (get-subcategory (Item _ _ _ subcategory _ _)) subcategory)
-  (define (get-amount (Item _ _ _ _ amount _)) amount)
-  (define (get-note (Item _ _ _ _ _ note)) note)
+  (define (get-id (%Item id _ _ _ _ _)) id)
+  (define (get-transaction-id (%Item _ tid _ _ _ _)) tid)
+  (define (get-category (%Item _ _ category _ _ _)) category)
+  (define (get-subcategory (%Item _ _ _ subcategory _ _)) subcategory)
+  (define (get-amount (%Item _ _ _ _ amount _)) amount)
+  (define (get-note (%Item _ _ _ _ _ note)) note)
 
-  (define (update-id id (Item _ tid category subcategory amount note))
-    (Item id tid category subcategory amount note))
-  (define (update-transaction-id tid (Item id _ category subcategory amount note))
-    (Item id tid category subcategory amount note))
-  (define (update-category category (Item id tid _ subcategory amount note))
-    (Item id tid category subcategory amount note))
-  (define (update-subcategory subcategory (Item id tid category _ amount note))
-    (Item id tid category subcategory amount note))
-  (define (update-amount amount (Item id tid category subcategory _ note))
-    (Item id tid category subcategory amount note))
-  (define (update-note note (Item id tid category subcategory amount _))
-    (Item id tid category subcategory amount note))
+  (define (update-category category (%Item id tid _ subcategory amount note))
+    (%Item id tid category subcategory amount note))
+  (define (update-subcategory subcategory (%Item id tid category _ amount note))
+    (%Item id tid category subcategory amount note))
+  (define (update-amount amount (%Item id tid category subcategory _ note))
+    (%Item id tid category subcategory amount note))
+  (define (update-note note (%Item id tid category subcategory amount _))
+    (%Item id tid category subcategory amount note))
 
-  (define-class (Monad :m => UniqueId :m :id)
-    (unique-id? (:id -> :m Boolean)))
+
+  (declare item (IdGenerator :m :id => :tid -> String -> (Optional String) -> Integer -> (Optional String)
+                              -> :m (Item :id :tid)))
+  (define (item tid category subcategory amount note)
+    (>>= (generate-id)
+         (fn (id)
+           (pure (%Item id tid category subcategory amount note)))))
+
+  (define-class (Monad :m => IdGenerator :m :id)
+    (generate-id (Unit -> :m :id)))
 
   (define-type Error
     (Error (tree:Tree ErrorType)))
@@ -73,7 +82,6 @@
       (== x y)))
 
   (define-type ErrorType
-    (DuplicatedId)
     (CategoryIsEmpty)
     (SubcategoryIsEmpty)
     (InvalidAmount)
@@ -82,11 +90,10 @@
   (define-instance (Into ErrorType U8)
     (define (into x)
       (match x
-        ((DuplicatedId) 0)
-        ((CategoryIsEmpty) 1)
-        ((SubcategoryIsEmpty) 2)
-        ((InvalidAmount) 3)
-        ((NoteIsEmpty) 4))))
+        ((CategoryIsEmpty) 0)
+        ((SubcategoryIsEmpty) 1)
+        ((InvalidAmount) 2)
+        ((NoteIsEmpty) 3))))
 
   (define-instance (Eq ErrorType)
     (define (== x y)
@@ -96,12 +103,11 @@
     (define (<=> x y)
       (<=> (the U8 (into x)) (into y))))
 
-  (declare %validate ((UniqueId :m :id) => (Item :id :tid) -> (ResultT Error :m Unit)))
-  (define (%validate (Item id _ category subcategory amount note))
+  (declare %validate (Monad :m => (Item :id :tid) -> (ResultT Error :m Unit)))
+  (define (%validate (%Item _ _ category subcategory amount note))
     (do (tree <- (lift
                   (map mconcat
                        (sequence (make-list
-                                  (validate-unique-id id)
                                   (validate-category category)
                                   (validate-subcategory subcategory)
                                   (validate-amount amount)
@@ -110,15 +116,8 @@
             (pure Unit)
             (ResultT (pure (Err (Error tree)))))))
 
-  (define-instance ((UniqueId :m :id) => valid:Validatable :m (Item :id :tid) Error)
+  (define-instance (Monad :m => valid:Validatable :m (Item :id :tid) Error)
     (define valid:validate %validate))
-
-  (define (validate-unique-id id)
-    (do (b <- (unique-id? id))
-        (pure
-         (if b
-             tree:empty
-             (tree:make DuplicatedId)))))
 
   (define (validate-category category)
     (pure (if (== (string:length category) 0)

@@ -13,49 +13,35 @@
 (coalton-fiasco-init #:kakeibo-test-fiasco)
 
 (coalton-toplevel
-  (define-type ItemId
-    (UniqueId)
-    (DuplicatedId))
+  (define-type ItemId (ItemId))
 
-  (define-instance (item:UniqueId Identity ItemId)
-    (define (item:unique-id? x)
-      (Identity
-       (match x
-         ((UniqueId) True)
-         ((DuplicatedId) False)))))
+  (define-instance (item:IdGenerator Identity ItemId)
+    (define (item:generate-id) (pure ItemId)))
 
   (define-instance (Eq ItemId)
-    (define (== x y)
-      (match (Tuple x y)
-        ((Tuple (UniqueId) (UniqueId)) True)
-        ((Tuple (DuplicatedId) (DuplicatedId)) True)
-        (_ False))))
+    (define (== (ItemId) (ItemId)) True))
 
-  (define-type TransactionId
-    (TransactionId)
-    (AnotherTransactionId))
+  (define-type TransactionId (TransactionId))
 
   (define-instance (Eq TransactionId)
-    (define (== x y)
-      (match (Tuple x y)
-        ((Tuple (TransactionId) (TransactionId)) True)
-        ((Tuple (AnotherTransactionId) (AnotherTransactionId)) True)
-        (_ False))))
+    (define (== (TransactionId) (TransactionId)) True))
 
   (define valid (.< runIdentity runResultT valid:valid)))
 
 (coalton-toplevel
-  (define it (item:Item UniqueId
-                        TransactionId
-                        "Cateogry"
-                        (Some "Subcategory")
-                        100
-                        (Some "Note"))))
+  (declare it (item:Item ItemId TransactionId))
+  (define it
+    (runIdentity
+     (item:Item TransactionId
+                "Cateogry"
+                (Some "Subcategory")
+                100
+                (Some "Note")))))
 
 (define-test kakeibo/entity/item-get ()
   (is (pipe it
             item:get-id
-            (== UniqueId)))
+            (== ItemId)))
   (is (pipe it
             item:get-transaction-id
             (== TransactionId)))
@@ -73,14 +59,6 @@
             (== (Some "Note")))))
 
 (define-test kakeibo/entity/item-update ()
-  (is (pipe it
-            (item:update-id DuplicatedId)
-            item:get-id
-            (== DuplicatedId)))
-  (is (pipe it
-            (item:update-transaction-id AnotherTransactionId)
-            item:get-transaction-id
-            (== AnotherTransactionId)))
   (is (pipe it
             (item:update-category "")
             item:get-category
@@ -121,10 +99,6 @@
             valid result:ok?))
 
   (is (pipe it
-            (item:update-id DuplicatedId)
-            valid
-            (== (Err (item:Error (tree:make item:DuplicatedId))))))
-  (is (pipe it
             (item:update-category "")
             valid
             (== (Err (item:Error (tree:make item:CategoryIsEmpty))))))
@@ -157,7 +131,6 @@
                   (tree:make item:CategoryIsEmpty
                              item:NoteIsEmpty))))))
   (is (pipe it
-            (item:update-id DuplicatedId)
             (item:update-category "")
             (item:update-subcategory (Some ""))
             (item:update-amount 0)
@@ -165,8 +138,7 @@
             valid
             (== (Err
                  (item:Error
-                  (tree:make item:DuplicatedId
-                             item:CategoryIsEmpty
+                  (tree:make item:CategoryIsEmpty
                              item:SubcategoryIsEmpty
                              item:InvalidAmount
                              item:NoteIsEmpty)))))))
