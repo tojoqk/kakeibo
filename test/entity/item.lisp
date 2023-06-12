@@ -47,7 +47,7 @@
   (declare it (item:Item ItemId TransactionId))
   (define it
     (runIdentity
-     (item:Item ExistingTransactionId
+     (item:item ExistingTransactionId
                 "Cateogry"
                 (Some "Subcategory")
                 100
