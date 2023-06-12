@@ -27,7 +27,6 @@
 
    #:Error
    #:ErrorType
-   #:DuplicatedId
    #:InvalidDate
    #:NoteIsEmpty))
 
