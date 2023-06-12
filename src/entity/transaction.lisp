@@ -17,7 +17,6 @@
    #:get-type
    #:get-date
    #:get-note
-   #:update-id
    #:update-type
    #:update-date
    #:update-note
@@ -38,29 +37,30 @@
 
 (coalton-toplevel
   (define-type (Transaction :id)
-    (Transaction :id                    ; Id
-                 Type                   ; Type
-                 date:Date              ; Date
-                 (Optional String)      ; Note
-                 ))
+    (%Transaction :id                    ; Id
+                  Type                   ; Type
+                  date:Date              ; Date
+                  (Optional String)      ; Note
+                  ))
 
-  (define (get-id (Transaction id _ _ _)) id)
-  (define (get-type (Transaction _ type _ _)) type)
-  (define (get-date (Transaction _ _ date _)) date)
-  (define (get-note (Transaction _ _ _ note)) note)
+  (define (get-id (%Transaction id _ _ _)) id)
+  (define (get-type (%Transaction _ type _ _)) type)
+  (define (get-date (%Transaction _ _ date _)) date)
+  (define (get-note (%Transaction _ _ _ note)) note)
 
-  (define (update-id id (Transaction _ type date note))
-    (Transaction id type date note))
-  (define (update-type type (Transaction id _ date note))
-    (Transaction id type date note))
-  (define (update-date date (Transaction id type _ note))
-    (Transaction id type date note))
-  (define (update-note note (Transaction id type date _))
-    (Transaction id type date note))
+  (define (update-type type (%Transaction id _ date note))
+    (%Transaction id type date note))
+  (define (update-date date (%Transaction id type _ note))
+    (%Transaction id type date note))
+  (define (update-note note (%Transaction id type date _))
+    (%Transaction id type date note))
+
+  (define (transaction id type date note)
+    (%Transaction id type date note))
 
   (define-instance (Eq :id => Eq (Transaction :id))
-    (define (== (Transaction id1 type1 date1 note1)
-                (Transaction id2 type2 date2 note2))
+    (define (== (%Transaction id1 type1 date1 note1)
+                (%Transaction id2 type2 date2 note2))
       (and (== id1 id2)
            (== type1 type2)
            (== date1 date2)
@@ -109,7 +109,7 @@
            (error-type-code y))))
 
   (define-instance (UniqueId :m :id => valid:Validatable :m (Transaction :id) Error)
-    (define (valid:validate (Transaction id _ date note))
+    (define (valid:validate (%Transaction id _ date note))
       (do (tree <- (lift
                     (map mconcat
                          (sequence

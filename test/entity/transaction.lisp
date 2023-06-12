@@ -57,10 +57,6 @@
 
 (define-test kakeibo/entity/transaction-update ()
   (is (pipe it
-            (transaction:update-id DuplicatedId)
-            transaction:get-id
-            (== DuplicatedId)))
-  (is (pipe it
             (transaction:update-type transaction:Outgo)
             transaction:get-type
             (== transaction:Outgo)))
@@ -86,11 +82,6 @@
             valid result:ok?))
 
   (is (pipe it
-            (transaction:update-id DuplicatedId)
-            valid
-            (== (Err (transaction:Error
-                      (tree:make transaction:DuplicatedId))))))
-  (is (pipe it
             (transaction:update-date
              (date:Date 2023 date:January 32))
             valid
@@ -102,12 +93,10 @@
             (== (Err (transaction:Error
                       (tree:make transaction:NoteIsEmpty))))))
   (is (pipe it
-            (transaction:update-id DuplicatedId)
             (transaction:update-date
              (date:Date 2023 date:January 32))
             (transaction:update-note (Some ""))
             valid
             (== (Err (transaction:Error
-                      (tree:make transaction:DuplicatedId
-                                 transaction:InvalidDate
+                      (tree:make transaction:InvalidDate
                                  transaction:NoteIsEmpty)))))))
