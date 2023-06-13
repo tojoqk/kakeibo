@@ -21,9 +21,6 @@
            #:update-amount
            #:update-note
 
-           #:IdGenerator
-           #:generate-id
-
            #:TransactionIdExistence
            #:transaction-id-exists?
 
@@ -74,15 +71,10 @@
   (define (update-note note (%Item id tid category subcategory amount _))
     (%Item id tid category subcategory amount note))
 
-  (declare item (IdGenerator :m :id => :tid -> String -> (Optional String) -> Integer -> (Optional String)
-                             -> :m (Item :id :tid)))
+  (declare item (:tid -> String -> (Optional String) -> Integer -> (Optional String)
+                      -> (Item Unit :tid)))
   (define (item tid category subcategory amount note)
-    (>>= (generate-id)
-         (fn (id)
-           (pure (%Item id tid category subcategory amount note)))))
-
-  (define-class (Monad :m => IdGenerator :m :id)
-    (generate-id (Unit -> :m :id)))
+    (%Item Unit tid category subcategory amount note))
 
   (define-type Error
     (Error (tree:Tree ErrorType)))

@@ -13,14 +13,6 @@
 (coalton-fiasco-init #:kakeibo-test-fiasco)
 
 (coalton-toplevel
-  (define-type ItemId (ItemId))
-
-  (define-instance (item:IdGenerator Identity ItemId)
-    (define (item:generate-id) (pure ItemId)))
-
-  (define-instance (Eq ItemId)
-    (define (== (ItemId) (ItemId)) True))
-
   (define-type TransactionId
     (ExistingTransactionId)
     (nonExistingTransactionId))
@@ -44,19 +36,16 @@
   (define valid (.< runIdentity runResultT valid:valid)))
 
 (coalton-toplevel
-  (declare it (item:Item ItemId TransactionId))
-  (define it
-    (runIdentity
-     (item:item ExistingTransactionId
-                "Cateogry"
-                (Some "Subcategory")
-                100
-                (Some "Note")))))
+  (define it (item:item ExistingTransactionId
+                        "Cateogry"
+                        (Some "Subcategory")
+                        100
+                        (Some "Note"))))
 
 (define-test kakeibo/entity/item-get ()
   (is (pipe it
             item:get-id
-            (== ItemId)))
+            (== Unit)))
   (is (pipe it
             item:get-transaction-id
             (== ExistingTransactionId)))
@@ -113,15 +102,6 @@
             (item:update-note None)
             valid result:ok?))
 
-  (is (pipe (the (item:item ItemId TransactionId)
-                 (runIdentity
-                  (item:item nonExistingTransactionId
-                             (item:get-category it)
-                             (item:get-subcategory it)
-                             (item:get-amount it)
-                             (item:get-note it))))
-            valid
-            (== (Err (item:Error (tree:make item:TransactionIdDoesNotExist))))))
   (is (pipe it
             (item:update-category "")
             valid
