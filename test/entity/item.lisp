@@ -105,33 +105,33 @@
   (is (pipe it
             (item:update-category "")
             valid
-            (== (Err (item:Error (tree:make item:CategoryIsEmpty))))))
+            (== (Err (item:ValidateError (tree:make item:CategoryIsEmpty))))))
   (is (pipe it
             (item:update-subcategory (Some ""))
             valid
-            (== (Err (item:Error (tree:make item:SubcategoryIsEmpty))))))
+            (== (Err (item:ValidateError (tree:make item:SubcategoryIsEmpty))))))
   (is (pipe it
             (item:update-amount 0)
             valid
-            (== (Err (item:Error (tree:make item:InvalidAmount))))))
+            (== (Err (item:ValidateError (tree:make item:InvalidAmount))))))
   (is (pipe it
             (item:update-amount -10)
             valid
-            (== (Err (item:Error (tree:make item:InvalidAmount))))))
+            (== (Err (item:ValidateError (tree:make item:InvalidAmount))))))
   (is (pipe it
             (item:update-amount 2147483648)
             valid
-            (== (Err (item:Error (tree:make item:InvalidAmount))))))
+            (== (Err (item:ValidateError (tree:make item:InvalidAmount))))))
   (is (pipe it
             (item:update-note (Some ""))
             valid
-            (== (Err (item:Error (tree:make item:NoteIsEmpty))))))
+            (== (Err (item:ValidateError (tree:make item:NoteIsEmpty))))))
   (is (pipe it
             (item:update-category "")
             (item:update-note (Some ""))
             valid
             (== (Err
-                 (item:Error
+                 (item:ValidateError
                   (tree:make item:CategoryIsEmpty
                              item:NoteIsEmpty))))))
   (is (pipe it
@@ -141,7 +141,7 @@
             (item:update-note (Some ""))
             valid
             (== (Err
-                 (item:Error
+                 (item:ValidateError
                   (tree:make item:CategoryIsEmpty
                              item:SubcategoryIsEmpty
                              item:InvalidAmount

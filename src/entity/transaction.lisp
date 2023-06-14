@@ -4,7 +4,6 @@
         #:kakeibo/global/identity
         #:kakeibo/global/transformer/result
         #:kakeibo/global/transformer/monad)
-  (:shadow #:error)
   (:local-nicknames
    (#:tree #:coalton-library/ord-tree)
    (#:result #:coalton-library/result)
@@ -25,8 +24,8 @@
    #:Income
    #:Outgo
 
-   #:Error
-   #:ErrorType
+   #:ValidateError
+   #:ValidateErrorType
    #:InvalidDate
    #:NoteIsEmpty))
 
@@ -75,14 +74,14 @@
         ((Tuple (Outgo) (Outgo)) True)
         (_ False))))
 
-  (define-type Error
-    (Error (tree:Tree ErrorType)))
+  (define-type ValidateError
+    (ValidateError (tree:Tree ValidateErrorType)))
 
-  (define-instance (Eq Error)
-    (define (== (Error x) (Error y))
+  (define-instance (Eq ValidateError)
+    (define (== (ValidateError x) (ValidateError y))
       (== x y)))
 
-  (define-type ErrorType
+  (define-type ValidateErrorType
     (InvalidDate)
     (NoteIsEmpty))
 
@@ -91,17 +90,17 @@
       ((InvalidDate) 0)
       ((NoteIsEmpty) 1)))
 
-  (define-instance (Eq ErrorType)
+  (define-instance (Eq ValidateErrorType)
     (define (== x y)
       (== (error-type-code x)
           (error-type-code y))))
 
-  (define-instance (Ord ErrorType)
+  (define-instance (Ord ValidateErrorType)
     (define (<=> x y)
       (<=> (error-type-code x)
            (error-type-code y))))
 
-  (define-instance (Monad :m => valid:Validatable :m (Transaction :id) Error)
+  (define-instance (Monad :m => valid:Validatable :m (Transaction :id) ValidateError)
     (define (valid:validate (%Transaction id _ date note))
       (do (tree <- (lift
                     (map mconcat
@@ -110,7 +109,7 @@
                                      (note-validation note))))))
           (if (== tree:empty tree)
               (pure Unit)
-              (ResultT (pure (Err (Error tree))))))))
+              (ResultT (pure (Err (ValidateError tree))))))))
 
   (define (date-validation date)
     (do (res <- (runResultT (valid:valid (the date:Date date))))

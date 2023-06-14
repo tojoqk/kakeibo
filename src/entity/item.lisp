@@ -3,7 +3,6 @@
         #:coalton-library/classes
         #:kakeibo/global/transformer/result
         #:kakeibo/global/transformer/monad)
-  (:shadow #:error)
   (:local-nicknames
    (#:valid #:kakeibo/global/valid)
    (#:tree #:coalton-library/ord-tree)
@@ -24,8 +23,8 @@
            #:TransactionIdExistence
            #:transaction-id-exists?
 
-           #:Error
-           #:ErrorType
+           #:ValidateError
+           #:ValidateErrorType
            #:TransactionIdDoesNotExist
            #:CategoryIsEmpty
            #:SubcategoryIsEmpty
@@ -76,14 +75,14 @@
   (define (item tid category subcategory amount note)
     (%Item Unit tid category subcategory amount note))
 
-  (define-type Error
-    (Error (tree:Tree ErrorType)))
+  (define-type ValidateError
+    (ValidateError (tree:Tree ValidateErrorType)))
 
-  (define-instance (Eq Error)
-    (define (== (Error x) (Error y))
+  (define-instance (Eq ValidateError)
+    (define (== (ValidateError x) (ValidateError y))
       (== x y)))
 
-  (define-type ErrorType
+  (define-type ValidateErrorType
     (TransactionIdDoesNotExist)
     (CategoryIsEmpty)
     (SubcategoryIsEmpty)
@@ -98,12 +97,12 @@
       ((InvalidAmount) 3)
       ((NoteIsEmpty) 4)))
 
-  (define-instance (Eq ErrorType)
+  (define-instance (Eq ValidateErrorType)
     (define (== x y)
       (== (error-type-code x)
           (error-type-code y))))
 
-  (define-instance (Ord ErrorType)
+  (define-instance (Ord ValidateErrorType)
     (define (<=> x y)
       (<=> (error-type-code x)
            (error-type-code y))))
@@ -111,7 +110,7 @@
   (define-class (Monad :m => TransactionIdExistence :m :tid)
     (transaction-id-exists? (:tid -> :m Boolean)))
 
-  (declare %validate (TransactionIdExistence :m :tid => (Item :id :tid) -> (ResultT Error :m Unit)))
+  (declare %validate (TransactionIdExistence :m :tid => (Item :id :tid) -> (ResultT ValidateError :m Unit)))
   (define (%validate (%Item _ tid category subcategory amount note))
     (do (tree <- (lift
                   (map mconcat
@@ -123,9 +122,9 @@
                                   (validate-note note))))))
         (if (== tree:empty tree)
             (pure Unit)
-            (ResultT (pure (Err (Error tree)))))))
+            (ResultT (pure (Err (ValidateError tree)))))))
 
-  (define-instance (TransactionIdExistence :m :tid => valid:Validatable :m (Item :id :tid) Error)
+  (define-instance (TransactionIdExistence :m :tid => valid:Validatable :m (Item :id :tid) ValidateError)
     (define valid:validate %validate))
 
   (define (validate-transaction-id tid)

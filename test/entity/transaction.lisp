@@ -66,18 +66,18 @@
             (transaction:update-date
              (date:Date 2023 date:January 32))
             valid
-            (== (Err (transaction:Error
+            (== (Err (transaction:ValidateError
                       (tree:make transaction:InvalidDate))))))
   (is (pipe it
             (transaction:update-note (Some ""))
             valid
-            (== (Err (transaction:Error
+            (== (Err (transaction:ValidateError
                       (tree:make transaction:NoteIsEmpty))))))
   (is (pipe it
             (transaction:update-date
              (date:Date 2023 date:January 32))
             (transaction:update-note (Some ""))
             valid
-            (== (Err (transaction:Error
+            (== (Err (transaction:ValidateError
                       (tree:make transaction:InvalidDate
                                  transaction:NoteIsEmpty)))))))
