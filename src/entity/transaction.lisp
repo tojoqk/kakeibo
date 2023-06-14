@@ -27,7 +27,14 @@
    #:ValidateError
    #:ValidateErrorType
    #:InvalidDate
-   #:NoteIsEmpty))
+   #:NoteIsEmpty
+
+   #:Creatable #:create
+   #:Readable #:read
+   #:Updatable #:update
+   #:Deletable #:%delete #:delete
+
+   #:AssociatedItemsExistence #:associated-items-exist?))
 
 (cl:in-package #:kakeibo/entity/transaction)
 

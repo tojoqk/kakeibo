@@ -29,7 +29,12 @@
            #:CategoryIsEmpty
            #:SubcategoryIsEmpty
            #:InvalidAmount
-           #:NoteIsEmpty))
+           #:NoteIsEmpty
+
+           #:Creatable #:create
+           #:Readable #:read
+           #:Updatable #:update
+           #:Deletable #:delete))
 
 (cl:in-package #:kakeibo/entity/item)
 
