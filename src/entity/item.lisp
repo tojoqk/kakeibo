@@ -163,4 +163,16 @@
         (if (== (string:length note_) 0)
             (tree:make NoteIsEmpty)
             tree:empty))
-       (_ tree:empty)))))
+       (_ tree:empty))))
+
+  (define-class (Monad :m => Creatable :m :id :tid)
+    (create (valid:Valid (Item Unit :tid) -> :m :id)))
+
+  (define-class (Monad :m => Readable :m :id :tid)
+    (read (:id -> :m (Item :id :tid))))
+
+  (define-class (Monad :m => Updatable :m :id :tid)
+    (udpate (valid:Valid (Item :id :tid) -> :m Unit)))
+
+  (define-class (Monad :m => Deletable :m :id)
+    (delete (:id -> :m Unit))))
