@@ -127,4 +127,30 @@
         (if (== 0 (string:length note_))
             (tree:make NoteIsEmpty)
             tree:empty))
-       (_ tree:empty)))))
+       (_ tree:empty))))
+
+  (define-class (Monad :m => Creatable :m :id)
+    (create (valid:Valid (Transaction Unit) -> :m :id)))
+
+  (define-class (Monad :m => Readable :m :id)
+    (read (:id -> :m (Transaction :id))))
+
+  (define-class (Monad :m => Updatable :m :id)
+    (update (valid:Valid (Transaction :id) -> :m Unit)))
+
+  (define-class (Monad :m => Deletable :m :id)
+    (%delete (:id -> :m Unit)))
+
+  (define-class (Monad :m => AssociatedItemsExistence :m :id)
+    (associated-items-exist? (:id -> (:m Boolean))))
+
+  (define-type DeleteError (AssociatedItemsExist))
+
+
+  (declare delete ((Deletable :m :id) (AssociatedItemsExistence :m :id) =>
+                   :id -> ResultT DeleteError :m Unit))
+  (define (delete id)
+    (do (b <- (lift (associated-items-exist? id)))
+        (if b
+            (ResultT (pure (Err AssociatedItemsExist)))
+            (lift (%delete id))))))
