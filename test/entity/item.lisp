@@ -1,7 +1,5 @@
 (defpackage #:kakeibo/test/entity/item
-  (:use #:coalton-testing
-        #:kakeibo/global/identity
-        #:kakeibo/global/transformer/result)
+  (:use #:coalton-testing)
   (:local-nicknames
    (#:valid #:kakeibo/global/valid)
    (#:item #:kakeibo/entity/item)
@@ -24,9 +22,7 @@
          (match y
            ((ExistingTransactionId) True)
            (_ False)))
-        (_ False))))
-
-  (define valid (.< runIdentity runResultT valid:valid)))
+        (_ False)))))
 
 (coalton-toplevel
   (define it (item:item ExistingTransactionId
@@ -75,54 +71,54 @@
 
 (define-test kakeibo/entity/item-validation ()
   (is (pipe it
-            valid
+            valid:valid
             as-optional
             (map valid:get)
             (== (Some it))))
   (is (pipe it
             (item:update-subcategory None)
-            valid result:ok?))
+            valid:valid result:ok?))
   (is (pipe it
             (item:update-amount 1)
-            valid result:ok?))
+            valid:valid result:ok?))
   (is (pipe it
             (item:update-amount 10)
-            valid result:ok?))
+            valid:valid result:ok?))
   (is (pipe it
             (item:update-amount 2147483647)
-            valid result:ok?))
+            valid:valid result:ok?))
   (is (pipe it
             (item:update-note None)
-            valid result:ok?))
+            valid:valid result:ok?))
 
   (is (pipe it
             (item:update-category "")
-            valid
+            valid:valid
             (== (Err (item:ValidateError (tree:make item:CategoryIsEmpty))))))
   (is (pipe it
             (item:update-subcategory (Some ""))
-            valid
+            valid:valid
             (== (Err (item:ValidateError (tree:make item:SubcategoryIsEmpty))))))
   (is (pipe it
             (item:update-amount 0)
-            valid
+            valid:valid
             (== (Err (item:ValidateError (tree:make item:InvalidAmount))))))
   (is (pipe it
             (item:update-amount -10)
-            valid
+            valid:valid
             (== (Err (item:ValidateError (tree:make item:InvalidAmount))))))
   (is (pipe it
             (item:update-amount 2147483648)
-            valid
+            valid:valid
             (== (Err (item:ValidateError (tree:make item:InvalidAmount))))))
   (is (pipe it
             (item:update-note (Some ""))
-            valid
+            valid:valid
             (== (Err (item:ValidateError (tree:make item:NoteIsEmpty))))))
   (is (pipe it
             (item:update-category "")
             (item:update-note (Some ""))
-            valid
+            valid:valid
             (== (Err
                  (item:ValidateError
                   (tree:make item:CategoryIsEmpty
@@ -132,7 +128,7 @@
             (item:update-subcategory (Some ""))
             (item:update-amount 0)
             (item:update-note (Some ""))
-            valid
+            valid:valid
             (== (Err
                  (item:ValidateError
                   (tree:make item:CategoryIsEmpty

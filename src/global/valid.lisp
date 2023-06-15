@@ -2,8 +2,6 @@
   (:use #:coalton
         #:coalton-library/classes
         #:kakeibo/global/transformer/result)
-  (:local-nicknames
-   (#:result #:coalton-library/result))
   (:export
    Valid
    get
@@ -20,10 +18,10 @@
     (define (== (%Valid x) (%Valid y))
       (== x y)))
 
-  (define-class (Validatable :m :a :b (:a -> :b))
-    (validate (:a -> (ResultT :b :m Unit))))
+  (define-class (Validatable :a :b (:a -> :b))
+    (validate (:a -> (Result :b Unit))))
 
-  (declare valid ((Monad :m) (Validatable :m :a :b) => :a -> (ResultT :b :m (Valid :a))))
+  (declare valid ((Validatable :a :b) => :a -> (Result :b (Valid :a))))
   (define (valid x)
     (>>= (validate x)
          (fn ((Unit))

@@ -90,7 +90,7 @@
 
   (define-type ErrorType (InvalidDate))
 
-  (define-instance (Monad :m => valid:Validatable :m Date ErrorType)
+  (define-instance (valid:Validatable Date ErrorType)
     (define (valid:validate (Date y m d))
       (let valid? =
         (and (<= 0 y)
@@ -111,5 +111,5 @@
                ((November)  (<= d 30))
                ((December)  (<= d 31)))))
       (if valid?
-          (pure Unit)
-          (ResultT (pure (Err InvalidDate)))))))
+          (Ok Unit)
+          (Err InvalidDate)))))

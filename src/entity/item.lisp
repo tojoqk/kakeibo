@@ -111,51 +111,46 @@
       (<=> (error-type-code x)
            (error-type-code y))))
 
-  (declare %validate (Monad :m => (Item :id :tid) -> (ResultT ValidateError :m Unit)))
+  (declare %validate (Item :id :tid -> Result ValidateError Unit))
   (define (%validate (%Item _ _ category subcategory amount note))
-    (do (tree <- (lift
-                  (map mconcat
-                       (sequence (make-list
-                                  (validate-category category)
-                                  (validate-subcategory subcategory)
-                                  (validate-amount amount)
-                                  (validate-note note))))))
-        (if (== tree:empty tree)
-            (pure Unit)
-            (ResultT (pure (Err (ValidateError tree)))))))
+    (let tree = (mconcat (make-list
+                          (validate-category category)
+                          (validate-subcategory subcategory)
+                          (validate-amount amount)
+                          (validate-note note))))
+    (if (== tree:empty tree)
+        (Ok Unit)
+        (Err (ValidateError tree))))
 
-  (define-instance (Monad :m => valid:Validatable :m (Item :id :tid) ValidateError)
+  (define-instance (valid:Validatable (Item :id :tid) ValidateError)
     (define valid:validate %validate))
 
   (define (validate-category category)
-    (pure (if (== (string:length category) 0)
-              (tree:make CategoryIsEmpty)
-              tree:empty)))
+    (if (== (string:length category) 0)
+        (tree:make CategoryIsEmpty)
+        tree:empty))
 
   (define (validate-subcategory subcategory)
-    (pure
-     (match subcategory
-       ((Some subcategory_)
-        (if (== (string:length subcategory_) 0)
-            (tree:make SubcategoryIsEmpty)
-            tree:empty))
-       (_ tree:empty))))
+    (match subcategory
+      ((Some subcategory_)
+       (if (== (string:length subcategory_) 0)
+           (tree:make SubcategoryIsEmpty)
+           tree:empty))
+      (_ tree:empty)))
 
   (define (validate-amount amount)
-    (pure
-     (if (or (<= amount 0)
-             (< (into (the I32 bounded:maxbound)) amount))
-         (tree:make InvalidAmount)
-         tree:empty)))
+    (if (or (<= amount 0)
+            (< (into (the I32 bounded:maxbound)) amount))
+        (tree:make InvalidAmount)
+        tree:empty))
 
   (define (validate-note note)
-    (pure
-     (match note
-       ((Some note_)
-        (if (== (string:length note_) 0)
-            (tree:make NoteIsEmpty)
-            tree:empty))
-       (_ tree:empty))))
+    (match note
+      ((Some note_)
+       (if (== (string:length note_) 0)
+           (tree:make NoteIsEmpty)
+           tree:empty))
+      (_ tree:empty)))
 
   (define-type ValidateError
     (ValidateError (tree:Tree ValidateErrorType)))

@@ -111,33 +111,28 @@
       (<=> (error-type-code x)
            (error-type-code y))))
 
-  (define-instance (Monad :m => valid:Validatable :m (Transaction :id) ValidateError)
+  (define-instance (valid:Validatable (Transaction :id) ValidateError)
     (define (valid:validate (%Transaction id _ date note))
-      (do (tree <- (lift
-                    (map mconcat
-                         (sequence
-                          (make-list (date-validation date)
-                                     (note-validation note))))))
-          (if (== tree:empty tree)
-              (pure Unit)
-              (ResultT (pure (Err (ValidateError tree))))))))
+      (let tree = (mconcat
+                   (make-list (date-validation date)
+                              (note-validation note))))
+      (if (== tree:empty tree)
+          (pure Unit)
+          (Err (ValidateError tree)))))
 
   (define (date-validation date)
-    (do (res <- (runResultT (valid:valid (the date:Date date))))
-        (pure
-         (match res
-           ((Ok _) tree:empty)
-           ((Err (date:InvalidDate))
-            (tree:make InvalidDate))))))
+    (match (valid:valid (the date:Date date))
+      ((Ok _) tree:empty)
+      ((Err (date:InvalidDate))
+       (tree:make InvalidDate))))
 
   (define (note-validation note)
-    (pure
-     (match note
-       ((Some note_)
-        (if (== 0 (string:length note_))
-            (tree:make NoteIsEmpty)
-            tree:empty))
-       (_ tree:empty))))
+    (match note
+      ((Some note_)
+       (if (== 0 (string:length note_))
+           (tree:make NoteIsEmpty)
+           tree:empty))
+      (_ tree:empty)))
 
   (define-class (Monad :m => Creatable :m :id)
     (create (valid:Valid (Transaction Unit) -> :m :id)))
