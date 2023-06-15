@@ -20,9 +20,6 @@
            #:update-amount
            #:update-note
 
-           #:TransactionIdExistence
-           #:transaction-id-exists?
-
            #:ValidateError
            #:ValidateErrorType
            #:TransactionIdDoesNotExist
@@ -32,9 +29,14 @@
            #:NoteIsEmpty
 
            #:Creatable #:create
+           #:CreateError #:TransactionNotFoundOnUpdate
            #:Readable #:read
+           #:ReadError #:NotFoundOnRead
            #:Updatable #:update
-           #:Deletable #:delete))
+           #:UpdateError #:NotFoundOnUpdate
+           #:Deletable #:delete
+           #:DeleteError #:NotFoundOnDelete
+           #:set-id))
 
 (cl:in-package #:kakeibo/entity/item)
 
@@ -80,9 +82,6 @@
   (define (item tid category subcategory amount note)
     (%Item Unit tid category subcategory amount note))
 
-  (define-type ValidateError
-    (ValidateError (tree:Tree ValidateErrorType)))
-
   (define-instance (Eq ValidateError)
     (define (== (ValidateError x) (ValidateError y))
       (== x y)))
@@ -112,15 +111,11 @@
       (<=> (error-type-code x)
            (error-type-code y))))
 
-  (define-class (Monad :m => TransactionIdExistence :m :tid)
-    (transaction-id-exists? (:tid -> :m Boolean)))
-
-  (declare %validate (TransactionIdExistence :m :tid => (Item :id :tid) -> (ResultT ValidateError :m Unit)))
-  (define (%validate (%Item _ tid category subcategory amount note))
+  (declare %validate (Monad :m => (Item :id :tid) -> (ResultT ValidateError :m Unit)))
+  (define (%validate (%Item _ _ category subcategory amount note))
     (do (tree <- (lift
                   (map mconcat
                        (sequence (make-list
-                                  (validate-transaction-id tid)
                                   (validate-category category)
                                   (validate-subcategory subcategory)
                                   (validate-amount amount)
@@ -129,15 +124,8 @@
             (pure Unit)
             (ResultT (pure (Err (ValidateError tree)))))))
 
-  (define-instance (TransactionIdExistence :m :tid => valid:Validatable :m (Item :id :tid) ValidateError)
+  (define-instance (Monad :m => valid:Validatable :m (Item :id :tid) ValidateError)
     (define valid:validate %validate))
-
-  (define (validate-transaction-id tid)
-    (do (b <- (transaction-id-exists? tid))
-        (pure
-         (if b
-             tree:empty
-             (tree:make TransactionIdDoesNotExist)))))
 
   (define (validate-category category)
     (pure (if (== (string:length category) 0)
@@ -169,14 +157,34 @@
             tree:empty))
        (_ tree:empty))))
 
+  (define-type ValidateError
+    (ValidateError (tree:Tree ValidateErrorType)))
+
+  (define-type CreateError
+    (TransactionNotFoundOnCreate))
+
   (define-class (Monad :m => Creatable :m :id :tid)
-    (create (valid:Valid (Item Unit :tid) -> :m :id)))
+    (create (valid:Valid (Item Unit :tid) -> ResultT CreateError :m :id)))
+
+  (define-type ReadError
+    (NotFoundOnRead))
 
   (define-class (Monad :m => Readable :m :id :tid)
-    (read (:id -> :m (Item :id :tid))))
+    (read (:id -> ResultT ReadError :m (Item :id :tid))))
+
+  (define-type UpdateError
+    (NotFoundOnUpdate)
+    (TransactionNotFoundOnUpdate))
 
   (define-class (Monad :m => Updatable :m :id :tid)
-    (udpate (valid:Valid (Item :id :tid) -> :m Unit)))
+    (udpate (valid:Valid (Item :id :tid) -> ResultT UpdateError :m Unit)))
+
+  (define-type DeleteError
+    (NotFoundOnDelete))
 
   (define-class (Monad :m => Deletable :m :id)
-    (delete (:id -> :m Unit))))
+    (delete (:id -> ResultT DeleteError :m Unit)))
+
+  (declare set-id (Monad :m => :id -> Item Unit :tid -> :m (Item :id :tid)))
+  (define (set-id id (%Item (Unit) tid category subcategory amount note))
+    (pure (%Item id tid category subcategory amount note))))

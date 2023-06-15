@@ -26,13 +26,6 @@
            (_ False)))
         (_ False))))
 
-  (define-instance (item:TransactionIdExistence Identity TransactionId)
-    (define (item:transaction-id-exists? tid)
-      (pure
-       (match tid
-         ((ExistingTransactionId) True)
-         ((nonExistingTransactionId) False)))))
-
   (define valid (.< runIdentity runResultT valid:valid)))
 
 (coalton-toplevel

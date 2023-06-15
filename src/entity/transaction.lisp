@@ -31,8 +31,12 @@
 
    #:Creatable #:create
    #:Readable #:read
+   #:ReadError #:NotFoundOnRead
    #:Updatable #:update
-   #:Deletable #:%delete #:delete
+   #:UpdateError #:NotFoundOnUpdate
+   #:Deletable #:delete
+   #:DeleteError #:NotFoundOnDelete #:AssociatedItemsExist
+   #:set-id
 
    #:AssociatedItemsExistence #:associated-items-exist?))
 
@@ -138,25 +142,31 @@
   (define-class (Monad :m => Creatable :m :id)
     (create (valid:Valid (Transaction Unit) -> :m :id)))
 
+  (define-class (Monad :m => TransactionIdExistence :m :tid)
+    (transaction-id-exists? (:tid -> :m Boolean)))
+
+  (define-type ReadError
+    (NotFoundOnRead))
+
   (define-class (Monad :m => Readable :m :id)
-    (read (:id -> :m (Transaction :id))))
+    (read (:id -> (ResultT ReadError :m (Transaction :id)))))
+
+  (define-type UpdateError
+    (NotFoundOnUpdate))
 
   (define-class (Monad :m => Updatable :m :id)
-    (update (valid:Valid (Transaction :id) -> :m Unit)))
+    (update (valid:Valid (Transaction :id) -> :ResultT UpdateError :m Unit)))
+
+  (define-type DeleteError
+    (NotFoundOnDelete)
+    (AssociatedItemsExist))
 
   (define-class (Monad :m => Deletable :m :id)
-    (%delete (:id -> :m Unit)))
+    (delete (:id -> (ResultT DeleteError :m Unit))))
+
+  (declare set-id (Monad :m => :id -> Transaction Unit -> :m (Transaction :id)))
+  (define (set-id id (%Transaction (Unit) type date note))
+    (pure (%Transaction id type date note)))
 
   (define-class (Monad :m => AssociatedItemsExistence :m :id)
-    (associated-items-exist? (:id -> (:m Boolean))))
-
-  (define-type DeleteError (AssociatedItemsExist))
-
-
-  (declare delete ((Deletable :m :id) (AssociatedItemsExistence :m :id) =>
-                   :id -> ResultT DeleteError :m Unit))
-  (define (delete id)
-    (do (b <- (lift (associated-items-exist? id)))
-        (if b
-            (ResultT (pure (Err AssociatedItemsExist)))
-            (lift (%delete id))))))
+    (associated-items-exist? (:id -> (:m Boolean)))))
