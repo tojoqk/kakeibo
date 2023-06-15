@@ -22,7 +22,6 @@
 
            #:ValidateError
            #:ValidateErrorType
-           #:TransactionIdDoesNotExist
            #:CategoryIsEmpty
            #:SubcategoryIsEmpty
            #:InvalidAmount
