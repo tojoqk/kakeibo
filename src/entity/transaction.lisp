@@ -36,7 +36,7 @@
    #:UpdateError #:NotFoundOnUpdate
    #:Deletable #:delete
    #:DeleteError #:NotFoundOnDelete #:AssociatedItemsExist
-   #:set-id))
+   #:%set-id))
 
 (cl:in-package #:kakeibo/entity/transaction)
 
@@ -157,6 +157,6 @@
   (define-class (Monad :m => Deletable :m :id)
     (delete (:id -> (ResultT DeleteError :m Unit))))
 
-  (declare set-id (Monad :m => :id -> Transaction Unit -> :m (Transaction :id)))
-  (define (set-id id (%Transaction (Unit) type date note))
-    (pure (%Transaction id type date note)))
+  (declare %set-id (Monad :m => :id -> Transaction Unit -> :m (Transaction :id)))
+  (define (%set-id id (%Transaction (Unit) type date note))
+    (pure (%Transaction id type date note))))

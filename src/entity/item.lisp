@@ -36,7 +36,7 @@
            #:UpdateError #:NotFoundOnUpdate
            #:Deletable #:delete
            #:DeleteError #:NotFoundOnDelete
-           #:set-id))
+           #:%set-id))
 
 (cl:in-package #:kakeibo/entity/item)
 
@@ -180,6 +180,6 @@
   (define-class (Monad :m => Deletable :m :id)
     (delete (:id -> ResultT DeleteError :m Unit)))
 
-  (declare set-id (Monad :m => :id -> Item Unit :tid -> :m (Item :id :tid)))
-  (define (set-id id (%Item (Unit) tid category subcategory amount note))
+  (declare %set-id (Monad :m => :id -> Item Unit :tid -> :m (Item :id :tid)))
+  (define (%set-id id (%Item (Unit) tid category subcategory amount note))
     (pure (%Item id tid category subcategory amount note))))
