@@ -27,7 +27,7 @@
            #:InvalidAmount
            #:NoteIsEmpty
 
-           #:Creatable #:create
+           #:Creatable #:create #:TransactionNotFoundOnCreate
            #:CreateError #:TransactionNotFoundOnUpdate
            #:Readable #:read
            #:ReadError #:NotFoundOnRead
