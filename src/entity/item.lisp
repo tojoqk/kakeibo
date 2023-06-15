@@ -171,7 +171,7 @@
     (TransactionNotFoundOnUpdate))
 
   (define-class (Monad :m => Updatable :m :id :tid)
-    (udpate (valid:Valid (Item :id :tid) -> ResultT UpdateError :m Unit)))
+    (update (valid:Valid (Item :id :tid) -> ResultT UpdateError :m Unit)))
 
   (define-type DeleteError
     (NotFoundOnDelete))
