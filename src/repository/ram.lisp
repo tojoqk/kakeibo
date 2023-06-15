@@ -50,10 +50,10 @@
       (let trx = (valid:get trx))
       (do ((%RAM (Transaction current-id mp) itm) <- st:get)
           (trx <- (transaction:%set-id current-id trx))
-        (st:put (%RAM (Transaction (1+ current-id)
+          (st:put (%RAM (Transaction (1+ current-id)
                                    (map:insert-or-replace mp current-id trx))
                       itm))
-        (pure current-id))))
+          (pure current-id))))
 
   (define-instance (transaction:Readable (st:ST RAM) Integer)
     (define (transaction:read id)
@@ -69,9 +69,9 @@
       (let id = (transaction:get-id trx))
       (do ((%RAM (Transaction next-id mp) itm) <- (lift st:get))
           (transaction-not-found-error id transaction:NotFoundOnUpdate)
-        (lift (st:put (%RAM (Transaction next-id
-                                         (map:insert-or-replace mp id trx))
-                            itm))))))
+          (lift (st:put (%RAM (Transaction next-id
+                                           (map:insert-or-replace mp id trx))
+                              itm))))))
 
   (define-instance (transaction:Deletable (st:ST RAM) Integer)
     (define (transaction:delete id)
@@ -90,12 +90,12 @@
       (let itm = (valid:get itm))
       (do ((%RAM (Transaction trx-id trx-mp) (Item current-id mp)) <- (lift st:get))
           (itm <-  (item:%set-id current-id itm))
-        (transaction-not-found-error (item:get-transaction-id itm)
+          (transaction-not-found-error (item:get-transaction-id itm)
                                      item:TransactionNotFoundOnCreate)
-        (lift (st:put (%RAM (Transaction trx-id trx-mp)
-                            (Item (1+ current-id)
-                                  (map:insert-or-replace mp current-id itm)))))
-        (pure current-id))))
+          (lift (st:put (%RAM (Transaction trx-id trx-mp)
+                              (Item (1+ current-id)
+                                    (map:insert-or-replace mp current-id itm)))))
+          (pure current-id))))
 
   (define-instance (item:Readable (st:ST RAM) Integer Integer)
     (define (item:read id)
