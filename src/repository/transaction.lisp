@@ -1,14 +1,14 @@
 (in-package #:kakeibo/repository/ram)
 
 (coalton-toplevel
-  (define (transaction-not-found-error id e)
+  (define (check-transaction-exists id e)
     (do ((%RAM (Transaction _ trx-mp) _) <- (lift st:get))
         (match (map:lookup trx-mp id)
           ((Some _) (pure Unit))
           ((None)
            (ResultT (pure (Err e)))))))
 
-  (define (associated-items-exist-error trx-id e)
+  (define (check-no-associated-items-in-transaction trx-id e)
     (do ((%RAM _ (Item _ itm-mp)) <- (lift st:get))
         (if (iter:and! (map (.< (/= trx-id) item:get-transaction-id)
                             (map:values itm-mp)))
@@ -38,7 +38,7 @@
       (let trx = (valid:get trx))
       (let id = (transaction:get-id trx))
       (do ((%RAM (Transaction next-id mp) itm) <- (lift st:get))
-          (transaction-not-found-error id transaction:NotFoundOnUpdate)
+          (check-transaction-exists id transaction:NotFoundOnUpdate)
           (lift (st:put (%RAM (Transaction next-id
                                            (map:insert-or-replace mp id trx))
                               itm))))))
@@ -48,8 +48,9 @@
       (do ((%RAM (Transaction next-id trx-mp) itm) <- (lift st:get))
           (match (map:remove trx-mp id)
             ((Some new-mp)
-             (do (associated-items-exist-error id
-                                               transaction:AssociatedItemsExist)
+             (do (check-no-associated-items-in-transaction
+                  id
+                  transaction:AssociatedItemsExist)
                  (lift (st:put (%RAM (Transaction next-id new-mp)
                                      itm)))))
             ((None)
