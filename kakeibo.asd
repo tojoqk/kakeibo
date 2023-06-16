@@ -12,7 +12,11 @@
                (:file "global/identity")
                (:file "entity/date")
                (:file "entity/item")
-               (:file "entity/transaction")))
+               (:file "entity/transaction")
+               (:file "repository/ram/package")
+               (:file "repository/ram/ram")
+               (:file "repository/ram/transaction")
+               (:file "repository/ram/item")))
 
 (asdf:defsystem #:kakeibo/test
   :description "Tests for kakeibo"
