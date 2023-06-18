@@ -53,7 +53,7 @@
        ((%RAM trx (Item itm-id itm-mp)) <- (monad/trans:lift st:get))
        (match (map:remove itm-mp id)
          ((Some new-mp)
-          (monad/trans:lift (st:put (%RAM trx (Item itm-id itm-mp)))))
+          (monad/trans:lift (st:put (%RAM trx (Item itm-id new-mp)))))
          ((None)
           (result/trans:T
            (pure (Err item:NotFoundOnDelete)))))))))
