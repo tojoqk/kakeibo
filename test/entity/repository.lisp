@@ -379,7 +379,7 @@
                    (v <- (ignore-err (valid (it/itm tid))))
                    (id <- (ignore-err (item:create v)))
                    (itm <- (ignore-err (item:read id)))
-                   (ignore-err (transaction:delete tid))
+                   (ignore-err (item:delete id))
                    (v <- (ignore-err (valid itm)))
                    (pure v)))))
            (match res
