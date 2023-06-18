@@ -1,8 +1,6 @@
 (cl:defpackage #:kakeibo/entity/date
   (:use #:coalton
-        #:coalton-library/builtin
-        #:coalton-library/classes
-        #:coalton-library/functions)
+        #:coalton-prelude)
   (:local-nicknames
    (#:integral #:coalton-library/math/integral)
    (#:valid #:kakeibo/global/valid))
