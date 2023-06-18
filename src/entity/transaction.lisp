@@ -132,26 +132,26 @@
            tree:empty))
       (_ tree:empty)))
 
-  (define-class (Monad :m => Creatable :m :id)
+  (define-class (Monad :m => Creatable :m :id (:m -> :id))
     (create (valid:Valid (Transaction Unit) -> :m :id)))
 
   (define-type ReadError
     (NotFoundOnRead))
 
-  (define-class (Monad :m => Readable :m :id)
+  (define-class (Monad :m => Readable :m :id (:m -> :id))
     (read (:id -> (ResultT ReadError :m (Transaction :id)))))
 
   (define-type UpdateError
     (NotFoundOnUpdate))
 
-  (define-class (Monad :m => Updatable :m :id)
+  (define-class (Monad :m => Updatable :m :id (:m -> :id))
     (update (valid:Valid (Transaction :id) -> ResultT UpdateError :m Unit)))
 
   (define-type DeleteError
     (NotFoundOnDelete)
     (AssociatedItemsExist))
 
-  (define-class (Monad :m => Deletable :m :id)
+  (define-class (Monad :m => Deletable :m :id (:m -> :id))
     (delete (:id -> (ResultT DeleteError :m Unit))))
 
   (declare %set-id (Monad :m => :id -> Transaction Unit -> :m (Transaction :id)))

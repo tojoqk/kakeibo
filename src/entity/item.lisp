@@ -157,26 +157,26 @@
   (define-type CreateError
     (TransactionNotFoundOnCreate))
 
-  (define-class (Monad :m => Creatable :m :id :tid)
+  (define-class (Monad :m => Creatable :m :id :tid (:m -> :id :tid))
     (create (valid:Valid (Item Unit :tid) -> ResultT CreateError :m :id)))
 
   (define-type ReadError
     (NotFoundOnRead))
 
-  (define-class (Monad :m => Readable :m :id :tid)
+  (define-class (Monad :m => Readable :m :id :tid (:m -> :id :tid))
     (read (:id -> ResultT ReadError :m (Item :id :tid))))
 
   (define-type UpdateError
     (NotFoundOnUpdate)
     (TransactionNotFoundOnUpdate))
 
-  (define-class (Monad :m => Updatable :m :id :tid)
+  (define-class (Monad :m => Updatable :m :id :tid (:m -> :id :tid))
     (update (valid:Valid (Item :id :tid) -> ResultT UpdateError :m Unit)))
 
   (define-type DeleteError
     (NotFoundOnDelete))
 
-  (define-class (Monad :m => Deletable :m :id)
+  (define-class (Monad :m => Deletable :m :id (:m -> :id))
     (delete (:id -> ResultT DeleteError :m Unit)))
 
   (declare %set-id (Monad :m => :id -> Item Unit :tid -> :m (Item :id :tid)))
