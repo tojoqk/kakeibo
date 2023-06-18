@@ -24,7 +24,6 @@
    #:test-item-read
    #:test-item-update
    #:test-item-delete
-   #:test-item-delete
    #:test-item-TransactionNotFoundOnCreate-error
    #:test-item-NotFoundOnRead-error
    #:test-item-NotFoundOnUpdate-error
@@ -92,12 +91,12 @@
       (do
        (v <- (ignore-err (valid it/trx)))
        (id <- (trans:lift (transaction:create v)))
-       (trx <- (ignore-err (transaction:read it/trx)))
+       (trx <- (ignore-err (transaction:read id)))
        (v <- (ignore-err
               (valid (transaction:update-note (Some "Note2")
                                               trx))))
        (ignore-err (transaction:update v))
-       (trx <- (ignore-err (transaction:read it/trx)))
+       (trx <- (ignore-err (transaction:read id)))
        (pure
         (and (== id
                  (transaction:get-id trx))
@@ -163,6 +162,8 @@
                   (do
                    (v <- (ignore-err (valid it/trx)))
                    (id <- (trans:lift (transaction:create v)))
+                   (trx <- (ignore-err (transaction:read id)))
+                   (v <- (ignore-err (valid trx)))
                    (ignore-err (transaction:delete id))
                    (pure v)))))
            (match res
@@ -233,21 +234,21 @@
       (do
        (v <- (ignore-err (valid it/trx)))
        (tid <- (trans:lift (transaction:create v)))
-        (v <- (ignore-err (valid (it/itm tid))))
-        (id <- (ignore-err (item:create v)))
-        (itm <- (ignore-err (item:read v)))
-        (pure
-         (and (== id (item:get-id itm))
-              (== tid
-                  (item:get-transaction-id itm))
-              (== (item:get-category (it/itm tid))
-                  (item:get-category itm))
-              (== (item:get-subcategory (it/itm tid))
-                  (item:get-subcategory itm))
-              (== (item:get-amount (it/itm tid))
-                  (item:get-amount itm))
-              (== (item:get-note (it/itm tid))
-                  (item:get-note itm))))))))
+       (v <- (ignore-err (valid (it/itm tid))))
+       (id <- (ignore-err (item:create v)))
+       (itm <- (ignore-err (item:read id)))
+       (pure
+        (and (== id (item:get-id itm))
+             (== tid
+                 (item:get-transaction-id itm))
+             (== (item:get-category (it/itm tid))
+                 (item:get-category itm))
+             (== (item:get-subcategory (it/itm tid))
+                 (item:get-subcategory itm))
+             (== (item:get-amount (it/itm tid))
+                 (item:get-amount itm))
+             (== (item:get-note (it/itm tid))
+                 (item:get-note itm))))))))
 
   (define (test-item-update)
     (to-test
@@ -257,12 +258,12 @@
        (tid <- (trans:lift (transaction:create v)))
         (v <- (ignore-err (valid (it/itm tid))))
         (id <- (ignore-err (item:create v)))
-        (itm <- (ignore-err (item:read v)))
+        (itm <- (ignore-err (item:read id)))
         (v <- (ignore-err
                (valid
                 (item:update-amount 9999 itm))))
         (ignore-err (item:update v))
-        (itm <- (ignore-err (item:read v)))
+        (itm <- (ignore-err (item:read id)))
         (pure
          (and (== id (item:get-id itm))
               (== tid
