@@ -135,9 +135,6 @@
   (define-class (Monad :m => Creatable :m :id)
     (create (valid:Valid (Transaction Unit) -> :m :id)))
 
-  (define-class (Monad :m => TransactionIdExistence :m :tid)
-    (transaction-id-exists? (:tid -> :m Boolean)))
-
   (define-type ReadError
     (NotFoundOnRead))
 
