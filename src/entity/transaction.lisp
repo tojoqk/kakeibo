@@ -1,6 +1,6 @@
 (cl:defpackage #:kakeibo/entity/transaction
   (:use #:coalton
-        #:coalton-library/classes)
+        #:coalton-prelude)
   (:local-nicknames
    (#:tree #:coalton-library/ord-tree)
    (#:result #:coalton-library/result)

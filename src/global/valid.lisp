@@ -1,6 +1,6 @@
 (cl:defpackage #:kakeibo/global/valid
   (:use #:coalton
-        #:coalton-library/classes)
+        #:coalton-prelude)
   (:export
    Valid
    get
