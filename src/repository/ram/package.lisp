@@ -10,4 +10,5 @@
    (#:transaction #:kakeibo/entity/transaction)
    (#:valid #:kakeibo/global/valid)
    (#:iter #:coalton-library/iterator)
-   (#:map #:coalton-library/ord-map)))
+   (#:map #:coalton-library/ord-map))
+  (:export #:init))
