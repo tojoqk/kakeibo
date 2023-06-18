@@ -36,4 +36,6 @@
   :components ((:file "fiasco")
                (:file "entity/date")
                (:file "entity/item")
-               (:file "entity/transaction")))
+               (:file "entity/transaction")
+               (:file "entity/repository")
+               (:file "repository/ram")))
