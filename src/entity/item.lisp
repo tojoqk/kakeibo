@@ -1,13 +1,12 @@
 (cl:defpackage #:kakeibo/entity/item
   (:use #:coalton
-        #:coalton-library/classes
-        #:kakeibo/global/transformer/result
-        #:kakeibo/global/transformer/monad)
+        #:coalton-library/classes)
   (:local-nicknames
    (#:valid #:kakeibo/global/valid)
    (#:tree #:coalton-library/ord-tree)
    (#:string #:coalton-library/string)
-   (#:bounded #:coalton-library/math/bounded))
+   (#:bounded #:coalton-library/math/bounded)
+   (#:result/trans #:kakeibo/global/result/trans))
   (:export #:Item
            #:get-id
            #:get-transaction-id
@@ -158,26 +157,26 @@
     (TransactionNotFoundOnCreate))
 
   (define-class (Monad :m => Creatable :m :id :tid (:m -> :id :tid))
-    (create (valid:Valid (Item Unit :tid) -> ResultT CreateError :m :id)))
+    (create (valid:Valid (Item Unit :tid) -> result/trans:T CreateError :m :id)))
 
   (define-type ReadError
     (NotFoundOnRead))
 
   (define-class (Monad :m => Readable :m :id :tid (:m -> :id :tid))
-    (read (:id -> ResultT ReadError :m (Item :id :tid))))
+    (read (:id -> result/trans:T ReadError :m (Item :id :tid))))
 
   (define-type UpdateError
     (NotFoundOnUpdate)
     (TransactionNotFoundOnUpdate))
 
   (define-class (Monad :m => Updatable :m :id :tid (:m -> :id :tid))
-    (update (valid:Valid (Item :id :tid) -> ResultT UpdateError :m Unit)))
+    (update (valid:Valid (Item :id :tid) -> result/trans:T UpdateError :m Unit)))
 
   (define-type DeleteError
     (NotFoundOnDelete))
 
   (define-class (Monad :m => Deletable :m :id (:m -> :id))
-    (delete (:id -> ResultT DeleteError :m Unit)))
+    (delete (:id -> result/trans:T DeleteError :m Unit)))
 
   (declare %set-id (Monad :m => :id -> Item Unit :tid -> :m (Item :id :tid)))
   (define (%set-id id (%Item (Unit) tid category subcategory amount note))

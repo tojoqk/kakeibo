@@ -1,15 +1,13 @@
 (cl:defpackage #:kakeibo/entity/transaction
   (:use #:coalton
-        #:coalton-library/classes
-        #:kakeibo/global/identity
-        #:kakeibo/global/transformer/result
-        #:kakeibo/global/transformer/monad)
+        #:coalton-library/classes)
   (:local-nicknames
    (#:tree #:coalton-library/ord-tree)
    (#:result #:coalton-library/result)
    (#:date #:kakeibo/entity/date)
    (#:valid #:kakeibo/global/valid)
-   (#:string #:coalton-library/string))
+   (#:string #:coalton-library/string)
+   (#:result/trans #:kakeibo/global/result/trans))
   (:export
    #:Transaction
    #:get-id
@@ -139,20 +137,20 @@
     (NotFoundOnRead))
 
   (define-class (Monad :m => Readable :m :id (:m -> :id))
-    (read (:id -> (ResultT ReadError :m (Transaction :id)))))
+    (read (:id -> (result/trans:T ReadError :m (Transaction :id)))))
 
   (define-type UpdateError
     (NotFoundOnUpdate))
 
   (define-class (Monad :m => Updatable :m :id (:m -> :id))
-    (update (valid:Valid (Transaction :id) -> ResultT UpdateError :m Unit)))
+    (update (valid:Valid (Transaction :id) -> result/trans:T UpdateError :m Unit)))
 
   (define-type DeleteError
     (NotFoundOnDelete)
     (AssociatedItemsExist))
 
   (define-class (Monad :m => Deletable :m :id (:m -> :id))
-    (delete (:id -> (ResultT DeleteError :m Unit))))
+    (delete (:id -> (result/trans:T DeleteError :m Unit))))
 
   (declare %set-id (Monad :m => :id -> Transaction Unit -> :m (Transaction :id)))
   (define (%set-id id (%Transaction (Unit) type date note))
