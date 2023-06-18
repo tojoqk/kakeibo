@@ -24,6 +24,7 @@
    #:test-item-read
    #:test-item-update
    #:test-item-delete
+   #:test-item-different-ids
    #:test-item-TransactionNotFoundOnCreate-error
    #:test-item-NotFoundOnRead-error
    #:test-item-NotFoundOnUpdate-error
@@ -289,6 +290,17 @@
         (id <- (ignore-err (item:create v)))
         (ignore-err (item:delete id))
         (pure True)))))
+
+  (define (test-item-different-ids)
+    (to-test
+     (result/trans:run
+      (do
+       (v <- (ignore-err (valid it/trx)))
+       (tid <- (trans:lift (transaction:create v)))
+       (v <- (ignore-err (valid (it/itm tid))))
+       (id1 <- (ignore-err (item:create v)))
+       (id2 <- (ignore-err (item:create v)))
+       (pure (/= id1 id2))))))
 
   (define (test-item-TransactionNotFoundOnCreate-error)
     (map (fn (res)

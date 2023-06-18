@@ -38,6 +38,7 @@
 (add-test entity:test-item-read)
 (add-test entity:test-item-update)
 (add-test entity:test-item-delete)
+(add-test entity:test-item-different-ids)
 (add-test entity:test-item-TransactionNotFoundOnCreate-error)
 (add-test entity:test-item-NotFoundOnRead-error)
 (add-test entity:test-item-NotFoundOnUpdate-error)
