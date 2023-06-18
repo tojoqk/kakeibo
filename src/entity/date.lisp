@@ -2,8 +2,7 @@
   (:use #:coalton
         #:coalton-library/builtin
         #:coalton-library/classes
-        #:coalton-library/functions
-        #:kakeibo/global/transformer/result)
+        #:coalton-library/functions)
   (:local-nicknames
    (#:integral #:coalton-library/math/integral)
    (#:valid #:kakeibo/global/valid))
