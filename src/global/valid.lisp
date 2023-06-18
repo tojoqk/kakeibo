@@ -1,7 +1,6 @@
 (cl:defpackage #:kakeibo/global/valid
   (:use #:coalton
-        #:coalton-library/classes
-        #:kakeibo/global/transformer/result)
+        #:coalton-library/classes)
   (:export
    Valid
    get
