@@ -2,7 +2,7 @@
   (:use #:coalton
         #:coalton-prelude)
   (:local-nicknames
-   (#:result/trans #:kakeibo/global/result/trans))
+   (#:result #:coalton-library/result))
   (:export
    #:SomeException
    #:Exception
@@ -24,23 +24,11 @@
     (define (to e) e)
     (define (from e) (Some e)))
 
-  (define-instance ((Exception :e)
-                    (Bifunctor :m) =>
+  (define-instance ((Exception :e) =>
                     Into
-                    (:m :a :e)
-                    (:m :a SomeException))
-    (define (into m) (map-snd to m)))
-
-  (define-instance ((Exception :e) (Monad :m) =>
-                    Into
-                    (result/trans:T :e :m :a)
-                    (result/trans:T SomeException :m :a))
-    (define (into m)
-      (result/trans:T (map (fn (x)
-                             (match x
-                               ((Ok x) (Ok x))
-                               ((Err x) (Err (to x)))))
-                           (result/trans:run m))))))
+                    (Result :e :a)
+                    (Result SomeException :a))
+    (define (into m) (result:map-err to m))))
 
 (cl:defmacro define-exception-instance (type)
   (cl:check-type type cl:symbol)

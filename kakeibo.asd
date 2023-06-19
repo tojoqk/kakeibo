@@ -6,9 +6,9 @@
   :depends-on (#:coalton)
   :serial t
   :pathname "src/"
-  :components ((:file "global/monad/trans")
+  :components ((:file "global/exception")
+               (:file "global/monad/trans")
                (:file "global/result/trans")
-               (:file "global/exception")
                (:file "global/valid")
                (:file "entity/date")
                (:file "entity/item")

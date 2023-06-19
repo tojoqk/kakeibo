@@ -2,8 +2,11 @@
   (:use #:coalton
         #:coalton-prelude)
   (:local-nicknames
-   (#:monad/trans #:kakeibo/global/monad/trans))
-  (:export #:T #:run))
+   (#:monad/trans #:kakeibo/global/monad/trans)
+   (#:result #:coalton-library/result)
+   (#:exception #:kakeibo/global/exception))
+  (:export #:T #:run
+           #:exception))
 
 (cl:in-package #:kakeibo/global/result/trans)
 
@@ -33,4 +36,10 @@
 
   (define-instance (monad/trans:MonadTrans (T :a))
     (define (monad/trans:lift m)
-      (T (>>= m (.< pure Ok))))))
+      (T (>>= m (.< pure Ok)))))
+
+  (declare exception ((Monad :m) (exception:Exception :e) =>
+                      (T :e :m :a) ->
+                      (T exception:SomeException :m :a)))
+  (define (exception m)
+    (T (map into (run m)))))
