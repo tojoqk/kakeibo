@@ -6,7 +6,8 @@
    (#:tree #:coalton-library/ord-tree)
    (#:string #:coalton-library/string)
    (#:bounded #:coalton-library/math/bounded)
-   (#:result/trans #:kakeibo/global/result/trans))
+   (#:result/trans #:kakeibo/global/result/trans)
+   (#:exception #:kakeibo/global/exception))
   (:export #:Item
            #:get-id
            #:get-transaction-id
@@ -152,15 +153,18 @@
 
   (define-type ValidateError
     (ValidateError (tree:Tree ValidateErrorType)))
+  (exception:define-exception-instance ValidateError)
 
   (define-type CreateError
     (TransactionNotFoundOnCreate))
+  (exception:define-exception-instance CreateError)
 
   (define-class (Monad :m => Creatable :m :id :tid (:m -> :id :tid))
     (create (valid:Valid (Item Unit :tid) -> result/trans:T CreateError :m :id)))
 
   (define-type ReadError
     (NotFoundOnRead))
+  (exception:define-exception-instance ReadError)
 
   (define-class (Monad :m => Readable :m :id :tid (:m -> :id :tid))
     (read (:id -> result/trans:T ReadError :m (Item :id :tid))))
@@ -168,12 +172,14 @@
   (define-type UpdateError
     (NotFoundOnUpdate)
     (TransactionNotFoundOnUpdate))
+  (exception:define-exception-instance UpdateError)
 
   (define-class (Monad :m => Updatable :m :id :tid (:m -> :id :tid))
     (update (valid:Valid (Item :id :tid) -> result/trans:T UpdateError :m Unit)))
 
   (define-type DeleteError
     (NotFoundOnDelete))
+  (exception:define-exception-instance DeleteError)
 
   (define-class (Monad :m => Deletable :m :id (:m -> :id))
     (delete (:id -> result/trans:T DeleteError :m Unit)))
