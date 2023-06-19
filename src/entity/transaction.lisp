@@ -7,7 +7,8 @@
    (#:date #:kakeibo/entity/date)
    (#:valid #:kakeibo/global/valid)
    (#:string #:coalton-library/string)
-   (#:result/trans #:kakeibo/global/result/trans))
+   (#:result/trans #:kakeibo/global/result/trans)
+   (#:exception #:kakeibo/global/exception))
   (:export
    #:Transaction
    #:get-id
@@ -83,6 +84,7 @@
 
   (define-type ValidateError
     (ValidateError (tree:Tree ValidateErrorType)))
+  (exception:define-exception-instance ValidateError)
 
   (define-instance (Eq ValidateError)
     (define (== (ValidateError x) (ValidateError y))
@@ -135,12 +137,14 @@
 
   (define-type ReadError
     (NotFoundOnRead))
+  (exception:define-exception-instance ReadError)
 
   (define-class (Monad :m => Readable :m :id (:m -> :id))
     (read (:id -> (result/trans:T ReadError :m (Transaction :id)))))
 
   (define-type UpdateError
     (NotFoundOnUpdate))
+  (exception:define-exception-instance UpdateError)
 
   (define-class (Monad :m => Updatable :m :id (:m -> :id))
     (update (valid:Valid (Transaction :id) -> result/trans:T UpdateError :m Unit)))
@@ -148,6 +152,7 @@
   (define-type DeleteError
     (NotFoundOnDelete)
     (AssociatedItemsExist))
+  (exception:define-exception-instance DeleteError)
 
   (define-class (Monad :m => Deletable :m :id (:m -> :id))
     (delete (:id -> (result/trans:T DeleteError :m Unit))))
