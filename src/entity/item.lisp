@@ -160,14 +160,14 @@
   (exception:define-exception-instance CreateError)
 
   (define-class (Monad :m => Creatable :m :id :tid (:m -> :id :tid))
-    (create (valid:Valid (Item Unit :tid) -> result/trans:T CreateError :m :id)))
+    (create (valid:Valid (Item Unit :tid) -> result/trans:ResultT CreateError :m :id)))
 
   (define-type ReadError
     (NotFoundOnRead))
   (exception:define-exception-instance ReadError)
 
   (define-class (Monad :m => Readable :m :id :tid (:m -> :id :tid))
-    (read (:id -> result/trans:T ReadError :m (Item :id :tid))))
+    (read (:id -> result/trans:ResultT ReadError :m (Item :id :tid))))
 
   (define-type UpdateError
     (NotFoundOnUpdate)
@@ -175,14 +175,14 @@
   (exception:define-exception-instance UpdateError)
 
   (define-class (Monad :m => Updatable :m :id :tid (:m -> :id :tid))
-    (update (valid:Valid (Item :id :tid) -> result/trans:T UpdateError :m Unit)))
+    (update (valid:Valid (Item :id :tid) -> result/trans:ResultT UpdateError :m Unit)))
 
   (define-type DeleteError
     (NotFoundOnDelete))
   (exception:define-exception-instance DeleteError)
 
   (define-class (Monad :m => Deletable :m :id (:m -> :id))
-    (delete (:id -> result/trans:T DeleteError :m Unit)))
+    (delete (:id -> result/trans:ResultT DeleteError :m Unit)))
 
   (declare %set-id (Monad :m => :id -> Item Unit :tid -> :m (Item :id :tid)))
   (define (%set-id id (%Item (Unit) tid category subcategory amount note))

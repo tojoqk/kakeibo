@@ -6,14 +6,14 @@
         (match (map:lookup trx-mp id)
           ((Some _) (pure Unit))
           ((None)
-           (result/trans:T (pure (Err e)))))))
+           (result/trans:ResultT (pure (Err e)))))))
 
   (define (check-no-associated-items-in-transaction trx-id e)
     (do ((%RAM _ (Item _ itm-mp)) <- (monad/trans:lift st:get))
         (if (iter:and! (map (.< (/= trx-id) item:get-transaction-id)
                             (map:values itm-mp)))
             (pure Unit)
-            (result/trans:T (pure (Err e))))))
+            (result/trans:ResultT (pure (Err e))))))
 
   (define-instance (transaction:Creatable (st:ST RAM) Integer)
     (define (transaction:create trx)
@@ -33,7 +33,7 @@
        (match (map:lookup mp id)
          ((Some trx) (pure trx))
          ((None)
-          (result/trans:T (pure (Err transaction:NotFoundOnRead))))))))
+          (result/trans:ResultT (pure (Err transaction:NotFoundOnRead))))))))
 
   (define-instance (transaction:Updatable (st:ST RAM) Integer)
     (define (transaction:update trx)
@@ -59,5 +59,5 @@
               (monad/trans:lift (st:put (%RAM (Transaction next-id new-mp)
                                               itm)))))
          ((None)
-          (result/trans:T
+          (result/trans:ResultT
            (pure (Err transaction:NotFoundOnDelete)))))))))

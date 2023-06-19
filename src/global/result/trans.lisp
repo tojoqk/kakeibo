@@ -5,41 +5,41 @@
    (#:monad/trans #:kakeibo/global/monad/trans)
    (#:result #:coalton-library/result)
    (#:exception #:kakeibo/global/exception))
-  (:export #:T #:run
+  (:export #:ResultT #:run
            #:exception))
 
 (cl:in-package #:kakeibo/global/result/trans)
 
 (coalton-toplevel
-  (define-type (T :a :m :b) (T (:m (Result :a :b))))
+  (define-type (ResultT :a :m :b) (ResultT (:m (Result :a :b))))
 
-  (define (run (T m)) m)
+  (define (run (ResultT m)) m)
 
-  (define-instance (Functor :m => (Functor (T :a :m)))
-    (define (map f (T m))
-      (T (map (map f) m))))
+  (define-instance (Functor :m => (Functor (ResultT :a :m)))
+    (define (map f (ResultT m))
+      (ResultT (map (map f) m))))
 
-  (define-instance (Applicative :m => (Applicative (T :a :m)))
+  (define-instance (Applicative :m => (Applicative (ResultT :a :m)))
     (define (pure x)
-      (T (pure (pure x))))
-    (define (liftA2 op (T m1) (T m2))
-      (T (liftA2 (liftA2 op) m1 m2))))
+      (ResultT (pure (pure x))))
+    (define (liftA2 op (ResultT m1) (ResultT m2))
+      (ResultT (liftA2 (liftA2 op) m1 m2))))
 
-  (define-instance (Monad :m => (Monad (T :a :m)))
-    (define (>>= (T m) f)
-      (T
+  (define-instance (Monad :m => (Monad (ResultT :a :m)))
+    (define (>>= (ResultT m) f)
+      (ResultT
        (>>= m
             (fn (m_)
               (match m_
                 ((Ok x) (run (f x)))
                 ((Err e) (pure (Err e)))))))))
 
-  (define-instance (monad/trans:MonadTrans (T :a))
+  (define-instance (monad/trans:MonadTrans (ResultT :a))
     (define (monad/trans:lift m)
-      (T (>>= m (.< pure Ok)))))
+      (ResultT (>>= m (.< pure Ok)))))
 
   (declare exception ((Monad :m) (exception:Exception :e) =>
-                      (T :e :m :a) ->
-                      (T exception:SomeException :m :a)))
+                      (ResultT :e :m :a) ->
+                      (ResultT exception:SomeException :m :a)))
   (define (exception m)
-    (T (map into (run m)))))
+    (ResultT (map into (run m)))))

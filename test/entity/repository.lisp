@@ -48,7 +48,7 @@
                (Some "Note")))
 
   (define (valid x)
-    (nest result/t:T
+    (nest result/t:ResultT
           pure valid:valid x))
 
   (define (to-test m)

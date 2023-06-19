@@ -140,14 +140,14 @@
   (exception:define-exception-instance ReadError)
 
   (define-class (Monad :m => Readable :m :id (:m -> :id))
-    (read (:id -> (result/trans:T ReadError :m (Transaction :id)))))
+    (read (:id -> (result/trans:ResultT ReadError :m (Transaction :id)))))
 
   (define-type UpdateError
     (NotFoundOnUpdate))
   (exception:define-exception-instance UpdateError)
 
   (define-class (Monad :m => Updatable :m :id (:m -> :id))
-    (update (valid:Valid (Transaction :id) -> result/trans:T UpdateError :m Unit)))
+    (update (valid:Valid (Transaction :id) -> result/trans:ResultT UpdateError :m Unit)))
 
   (define-type DeleteError
     (NotFoundOnDelete)
@@ -155,7 +155,7 @@
   (exception:define-exception-instance DeleteError)
 
   (define-class (Monad :m => Deletable :m :id (:m -> :id))
-    (delete (:id -> (result/trans:T DeleteError :m Unit))))
+    (delete (:id -> (result/trans:ResultT DeleteError :m Unit))))
 
   (declare %set-id (Monad :m => :id -> Transaction Unit -> :m (Transaction :id)))
   (define (%set-id id (%Transaction (Unit) type date note))

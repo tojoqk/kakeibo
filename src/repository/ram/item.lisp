@@ -7,7 +7,7 @@
      (match (map:lookup itm-mp id)
        ((Some _) (pure Unit))
        ((None)
-        (result/trans:T (pure (Err e)))))))
+        (result/trans:ResultT (pure (Err e)))))))
 
   (define-instance (item:Creatable (st:ST RAM) Integer Integer)
     (define (item:create itm)
@@ -29,7 +29,7 @@
           (match (map:lookup mp id)
             ((Some itm) (pure itm))
             ((None)
-             (result/trans:T (pure (Err item:NotFoundOnRead))))))))
+             (result/trans:ResultT (pure (Err item:NotFoundOnRead))))))))
 
   (define-instance (item:Updatable (st:ST RAM) Integer Integer)
     (define (item:update itm)
@@ -55,5 +55,5 @@
          ((Some new-mp)
           (monad/trans:lift (st:put (%RAM trx (Item itm-id new-mp)))))
          ((None)
-          (result/trans:T
+          (result/trans:ResultT
            (pure (Err item:NotFoundOnDelete)))))))))
