@@ -8,7 +8,8 @@
    (#:valid #:kakeibo/global/valid)
    (#:result #:coalton-library/result)
    (#:result/trans #:kakeibo/global/result/trans)
-   (#:trans #:kakeibo/global/monad/trans))
+   (#:trans #:kakeibo/global/monad/trans)
+   (#:exception #:kakeibo/global/exception))
   (:export
    #:test-transaction-create
    #:test-transaction-read
@@ -70,34 +71,40 @@
        (trans:lift (transaction:create v))
        (pure True)))))
 
+  (declare to-some ((exception:Exception :e)
+                    (Monad :m) =>
+                    (result/trans:T :e :m :a) ->
+                    (result/trans:T exception:SomeException :m :a)))
+  (define (to-some x) (into x))
+
   (define (test-transaction-read)
     (to-test
      (result/trans:run
       (do
-       (v <- (ignore-err (valid it/trx)))
+       (v <- (to-some (valid it/trx)))
        (id <- (trans:lift (transaction:create v)))
-       (trx <- (ignore-err (transaction:read id)))
-       (pure
-        (and (== id (transaction:get-id trx))
-             (== (transaction:get-type it/trx)
-                 (transaction:get-type trx))
-             (== (transaction:get-date it/trx)
-                 (transaction:get-date trx))
-             (== (transaction:get-note it/trx)
-                 (transaction:get-note trx))))))))
+        (trx <- (to-some (transaction:read id)))
+        (pure
+         (and (== id (transaction:get-id trx))
+              (== (transaction:get-type it/trx)
+                  (transaction:get-type trx))
+              (== (transaction:get-date it/trx)
+                  (transaction:get-date trx))
+              (== (transaction:get-note it/trx)
+                  (transaction:get-note trx))))))))
 
   (define (test-transaction-update)
     (to-test
      (result/trans:run
       (do
-       (v <- (ignore-err (valid it/trx)))
+       (v <- (to-some (valid it/trx)))
        (id <- (trans:lift (transaction:create v)))
-       (trx <- (ignore-err (transaction:read id)))
-       (v <- (ignore-err
+       (trx <- (to-some (transaction:read id)))
+       (v <- (to-some
               (valid (transaction:update-note (Some "Note2")
                                               trx))))
-       (ignore-err (transaction:update v))
-       (trx <- (ignore-err (transaction:read id)))
+       (to-some (transaction:update v))
+       (trx <- (to-some (transaction:read id)))
        (pure
         (and (== id
                  (transaction:get-id trx))
@@ -114,130 +121,90 @@
     (to-test
      (result/trans:run
       (do
-       (v <- (ignore-err (valid it/trx)))
+       (v <- (to-some (valid it/trx)))
        (id <- (trans:lift (transaction:create v)))
-       (ignore-err (transaction:delete id))
+       (to-some (transaction:delete id))
        (pure True)))))
 
   (define (test-transaction-different-ids)
     (to-test
      (result/trans:run
       (do
-       (v <- (ignore-err (valid it/trx)))
+       (v <- (to-some (valid it/trx)))
        (id1 <- (trans:lift (transaction:create v)))
        (id2 <- (trans:lift (transaction:create v)))
        (pure (/= id1 id2))))))
 
   (define (test-transaction-NotFoundOnRead-error)
     (map (fn (res)
-           (match res
-             ((Err (transaction:NotFoundOnRead)) True)
+           (match (result:map-err exception:from res)
+             ((Err (Some (transaction:NotFoundOnRead))) True)
              (_ False)))
          (result/trans:run
           (do
-           (res <-
-                (trans:lift
-                 (result/trans:run
-                  (do
-                   (v <- (ignore-err (valid it/trx)))
-                   (id <- (trans:lift (transaction:create v)))
-                    (ignore-err (transaction:delete id))
-                    (pure id)))))
-           (match res
-             ((Err _) (pure Unit))
-             ((Ok id)
-              (do
-               (transaction:read id)
-               (pure Unit))))))))
+           (v <- (to-some (valid it/trx)))
+           (id <- (trans:lift (transaction:create v)))
+           (to-some (transaction:delete id))
+           (to-some (transaction:read id))))))
 
   (define (test-transaction-NotFoundOnUpdate-error)
     (map (fn (res)
-           (match res
-             ((Err (transaction:NotFoundOnUpdate)) True)
+           (match (result:map-err exception:from res)
+             ((Err (Some (transaction:NotFoundOnUpdate))) True)
              (_ False)))
          (result/trans:run
           (do
-           (res <-
-                (trans:lift
-                 (result/trans:run
-                  (do
-                   (v <- (ignore-err (valid it/trx)))
-                   (id <- (trans:lift (transaction:create v)))
-                   (trx <- (ignore-err (transaction:read id)))
-                   (v <- (ignore-err (valid trx)))
-                   (ignore-err (transaction:delete id))
-                   (pure v)))))
-           (match res
-             ((Err _) (pure Unit))
-             ((Ok v)
-              (do
-               (transaction:update v)
-               (pure Unit))))))))
+           (v <- (to-some (valid it/trx)))
+           (id <- (trans:lift (transaction:create v)))
+           (trx <- (to-some (transaction:read id)))
+           (v <- (to-some (valid trx)))
+           (to-some (transaction:delete id))
+           (to-some (transaction:update v))))))
 
   (define (test-transaction-NotFoundOnDelete-error)
     (map (fn (res)
-           (match res
-             ((Err (transaction:NotFoundOnDelete)) True)
+           (match (result:map-err exception:from res)
+             ((Err (Some (transaction:NotFoundOnDelete))) True)
              (_ False)))
          (result/trans:run
           (do
-           (res <-
-                (trans:lift
-                 (result/trans:run
-                  (do
-                   (v <- (ignore-err (valid it/trx)))
-                   (id <- (trans:lift (transaction:create v)))
-                   (ignore-err (transaction:delete id))
-                   (pure id)))))
-           (match res
-             ((Err _) (pure Unit))
-             ((Ok v)
-              (do
-               (transaction:delete v)
-               (pure Unit))))))))
+           (v <- (to-some (valid it/trx)))
+           (id <- (trans:lift (transaction:create v)))
+           (to-some (transaction:delete id))
+           (to-some (transaction:delete id))))))
 
   (define (test-transaction-AssociatedItemsExist-error)
     (map (fn (res)
-           (match res
-             ((Err (transaction:AssociatedItemsExist)) True)
+           (match (result:map-err exception:from res)
+             ((Err (Some (transaction:AssociatedItemsExist))) True)
              (_ False)))
          (result/trans:run
           (do
-           (res <-
-                (trans:lift
-                 (result/trans:run
-                  (do
-                   (v <- (ignore-err (valid it/trx)))
-                   (id <- (trans:lift (transaction:create v)))
-                   (v <- (ignore-err (valid (it/itm id))))
-                   (ignore-err (item:create v))
-                   (pure id)))))
-           (match res
-             ((Err _) (pure Unit))
-             ((Ok id)
-              (do
-               (transaction:delete id)
-               (pure Unit))))))))
+           (v <- (to-some (valid it/trx)))
+           (id <- (trans:lift (transaction:create v)))
+           (v <- (to-some (valid (it/itm id))))
+           (to-some (item:create v))
+           (to-some (transaction:delete id))))))
 
   (define (test-item-create)
     (to-test
      (result/trans:run
       (do
-       (v <- (ignore-err (valid it/trx)))
+       (v <- (to-some (valid it/trx)))
        (tid <- (trans:lift (transaction:create v)))
-       (v <- (ignore-err (valid (it/itm tid))))
-       (ignore-err (item:create v))
+       (v <- (to-some (valid (it/itm tid))))
+       (to-some (item:create v))
        (pure True)))))
 
   (define (test-item-read)
     (to-test
      (result/trans:run
       (do
-       (v <- (ignore-err (valid it/trx)))
+       (v <- (to-some (valid it/trx)))
        (tid <- (trans:lift (transaction:create v)))
-       (v <- (ignore-err (valid (it/itm tid))))
-       (id <- (ignore-err (item:create v)))
-       (itm <- (ignore-err (item:read id)))
+       (v <- (to-some (valid (it/itm tid))))
+       (id <- (to-some (item:create v)))
+       (itm <- (to-some (item:read id)))
        (pure
         (and (== id (item:get-id itm))
              (== tid
@@ -255,172 +222,122 @@
     (to-test
      (result/trans:run
       (do
-       (v <- (ignore-err (valid it/trx)))
+       (v <- (to-some (valid it/trx)))
        (tid <- (trans:lift (transaction:create v)))
-        (v <- (ignore-err (valid (it/itm tid))))
-        (id <- (ignore-err (item:create v)))
-        (itm <- (ignore-err (item:read id)))
-        (v <- (ignore-err
-               (valid
-                (item:update-amount 9999 itm))))
-        (ignore-err (item:update v))
-        (itm <- (ignore-err (item:read id)))
-        (pure
-         (and (== id (item:get-id itm))
-              (== tid
-                  (item:get-transaction-id itm))
-              (== (item:get-category (it/itm tid))
-                  (item:get-category itm))
-              (== (item:get-subcategory (it/itm tid))
-                  (item:get-subcategory itm))
-              (/= (item:get-amount (it/itm tid))
-                  (item:get-amount itm))
-              (== 9999
-                  (item:get-amount itm))
-              (== (item:get-note (it/itm tid))
-                  (item:get-note itm))))))))
+       (v <- (to-some (valid (it/itm tid))))
+       (id <- (to-some (item:create v)))
+       (itm <- (to-some (item:read id)))
+       (v <- (to-some
+              (valid
+               (item:update-amount 9999 itm))))
+       (to-some (item:update v))
+       (itm <- (to-some (item:read id)))
+       (pure
+        (and (== id (item:get-id itm))
+             (== tid
+                 (item:get-transaction-id itm))
+             (== (item:get-category (it/itm tid))
+                 (item:get-category itm))
+             (== (item:get-subcategory (it/itm tid))
+                 (item:get-subcategory itm))
+             (/= (item:get-amount (it/itm tid))
+                 (item:get-amount itm))
+             (== 9999
+                 (item:get-amount itm))
+             (== (item:get-note (it/itm tid))
+                 (item:get-note itm))))))))
 
   (define (test-item-delete)
     (to-test
      (result/trans:run
       (do
-       (v <- (ignore-err (valid it/trx)))
+       (v <- (to-some (valid it/trx)))
        (tid <- (trans:lift (transaction:create v)))
-        (v <- (ignore-err (valid (it/itm tid))))
-        (id <- (ignore-err (item:create v)))
-        (ignore-err (item:delete id))
-        (pure True)))))
+       (v <- (to-some (valid (it/itm tid))))
+       (id <- (to-some (item:create v)))
+       (to-some (item:delete id))
+       (pure True)))))
 
   (define (test-item-different-ids)
     (to-test
      (result/trans:run
       (do
-       (v <- (ignore-err (valid it/trx)))
+       (v <- (to-some (valid it/trx)))
        (tid <- (trans:lift (transaction:create v)))
-       (v <- (ignore-err (valid (it/itm tid))))
-       (id1 <- (ignore-err (item:create v)))
-       (id2 <- (ignore-err (item:create v)))
+       (v <- (to-some (valid (it/itm tid))))
+       (id1 <- (to-some (item:create v)))
+       (id2 <- (to-some (item:create v)))
        (pure (/= id1 id2))))))
 
   (define (test-item-TransactionNotFoundOnCreate-error)
     (map (fn (res)
-           (match res
-             ((Err (item:TransactionNotFoundOnCreate)) True)
+           (match (result:map-err exception:from res)
+             ((Err (Some (item:TransactionNotFoundOnCreate))) True)
              (_ False)))
          (result/trans:run
           (do
-           (res <-
-                (trans:lift
-                 (result/trans:run
-                  (do
-                   (v <- (ignore-err (valid it/trx)))
-                   (tid <- (trans:lift (transaction:create v)))
-                   (ignore-err (transaction:delete tid))
-                   (v <- (ignore-err (valid (it/itm tid))))
-                   (pure v)))))
-           (match res
-             ((Err _) (pure Unit))
-             ((Ok v)
-              (do
-               (item:create v)
-               (pure Unit))))))))
+           (v <- (to-some (valid it/trx)))
+           (tid <- (trans:lift (transaction:create v)))
+           (to-some (transaction:delete tid))
+           (v <- (to-some (valid (it/itm tid))))
+           (to-some (item:create v))))))
 
   (define (test-item-NotFoundOnRead-error)
     (map (fn (res)
-           (match res
-             ((Err (item:NotFoundOnRead)) True)
+           (match (result:map-err exception:from res)
+             ((Err (Some (item:NotFoundOnRead))) True)
              (_ False)))
          (result/trans:run
           (do
-           (res <-
-                (trans:lift
-                 (result/trans:run
-                  (do
-                   (v <- (ignore-err (valid it/trx)))
-                   (tid <- (trans:lift (transaction:create v)))
-                   (v <- (ignore-err (valid (it/itm tid))))
-                   (id <- (ignore-err (item:create v)))
-                   (ignore-err (item:delete id))
-                   (pure id)))))
-           (match res
-             ((Err _) (pure Unit))
-             ((Ok id)
-              (do
-               (item:read id)
-               (pure Unit))))))))
+           (v <- (to-some (valid it/trx)))
+           (tid <- (trans:lift (transaction:create v)))
+           (v <- (to-some (valid (it/itm tid))))
+           (id <- (to-some (item:create v)))
+           (to-some (item:delete id))
+           (to-some (item:read id))))))
 
   (define (test-item-NotFoundOnUpdate-error)
     (map (fn (res)
-           (match res
-             ((Err (item:NotFoundOnUpdate)) True)
+           (match (result:map-err exception:from res)
+             ((Err (Some (item:NotFoundOnUpdate))) True)
              (_ False)))
          (result/trans:run
           (do
-           (res <-
-                (trans:lift
-                 (result/trans:run
-                  (do
-                   (v <- (ignore-err (valid it/trx)))
-                   (tid <- (trans:lift (transaction:create v)))
-                    (v <- (ignore-err (valid (it/itm tid))))
-                    (id <- (ignore-err (item:create v)))
-                    (itm <- (ignore-err (item:read id)))
-                    (ignore-err (item:delete id))
-                    (v <- (ignore-err (valid itm)))
-                    (pure v)))))
-           (match res
-             ((Err _) (pure Unit))
-             ((Ok v)
-              (do
-               (item:update v)
-               (pure Unit))))))))
+           (v <- (to-some (valid it/trx)))
+           (tid <- (trans:lift (transaction:create v)))
+           (v <- (to-some (valid (it/itm tid))))
+           (id <- (to-some (item:create v)))
+           (itm <- (to-some (item:read id)))
+           (to-some (item:delete id))
+           (v <- (to-some (valid itm)))
+           (to-some (item:update v))))))
 
   (define (test-item-TransactionNotFoundOnUpdate-error)
     (map (fn (res)
-           (match res
-             ((Err (item:NotFoundOnUpdate)) True)
+           (match (result:map-err exception:from res)
+             ((Err (Some (item:NotFoundOnUpdate))) True)
              (_ False)))
          (result/trans:run
           (do
-           (res <-
-                (trans:lift
-                 (result/trans:run
-                  (do
-                   (v <- (ignore-err (valid it/trx)))
-                   (tid <- (trans:lift (transaction:create v)))
-                   (v <- (ignore-err (valid (it/itm tid))))
-                   (id <- (ignore-err (item:create v)))
-                   (itm <- (ignore-err (item:read id)))
-                   (ignore-err (item:delete id))
-                   (v <- (ignore-err (valid itm)))
-                   (pure v)))))
-           (match res
-             ((Err _) (pure Unit))
-             ((Ok v)
-              (do
-               (item:update v)
-               (pure Unit))))))))
+           (v <- (to-some (valid it/trx)))
+           (tid <- (trans:lift (transaction:create v)))
+           (v <- (to-some (valid (it/itm tid))))
+           (id <- (to-some (item:create v)))
+           (itm <- (to-some (item:read id)))
+           (to-some (item:delete id))
+           (v <- (to-some (valid itm)))
+           (to-some (item:update v))))))
 
   (define (test-item-NotFoundOnDelete-error)
     (map (fn (res)
-           (match res
-             ((Err (item:NotFoundOnDelete)) True)
+           (match (result:map-err exception:from res)
+             ((Err (Some (item:NotFoundOnDelete))) True)
              (_ False)))
          (result/trans:run
           (do
-           (res <-
-                (trans:lift
-                 (result/trans:run
-                  (do
-                   (v <- (ignore-err (valid it/trx)))
-                   (tid <- (trans:lift (transaction:create v)))
-                   (v <- (ignore-err (valid (it/itm tid))))
-                   (id <- (ignore-err (item:create v)))
-                   (ignore-err (item:delete id))
-                   (pure id)))))
-           (match res
-             ((Err _) (pure Unit))
-             ((Ok id)
-              (do
-               (item:delete id)
-               (pure Unit)))))))))
+           (v <- (to-some (valid it/trx)))
+           (tid <- (trans:lift (transaction:create v)))
+           (v <- (to-some (valid (it/itm tid))))
+           (id <- (to-some (item:create v)))
+           (to-some (item:delete id))
+           (to-some (item:delete id)))))))
