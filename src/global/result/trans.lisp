@@ -8,7 +8,8 @@
    (#:exception #:kakeibo/global/exception))
   (:export #:ResultT #:run
            #:some
-           #:flat #:flat*))
+           #:flat #:flat*
+           #:hoist))
 
 (cl:in-package #:kakeibo/global/result/trans)
 
@@ -62,4 +63,9 @@
                   ResultT :e1 (ResultT :e2 :m) :a ->
                   ResultT exception:Some :m :a))
   (define (flat* m)
-    (ResultT (map join (run (some (run (some m))))))))
+    (ResultT (map join (run (some (run (some m)))))))
+
+  (declare hoist ((Monad :m) =>
+                  (Result :e :a) -> (ResultT :e :m :a)))
+  (define (hoist r)
+    (ResultT (pure r))))
