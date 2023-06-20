@@ -111,18 +111,10 @@
 
   (define-instance (valid:Validatable (Transaction :id) ValidateError)
     (define (valid:validate (%Transaction id _ date note))
-      (let tree = (mconcat
-                   (make-list (date-validation date)
-                              (note-validation note))))
+      (let tree = (note-validation note))
       (if (== tree:empty tree)
           (pure Unit)
           (Err (ValidateError tree)))))
-
-  (define (date-validation date)
-    (match (valid:valid (the date:Date date))
-      ((Ok _) tree:empty)
-      ((Err (date:InvalidDate))
-       (tree:make InvalidDate))))
 
   (define (note-validation note)
     (match note

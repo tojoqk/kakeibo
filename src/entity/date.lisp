@@ -1,22 +1,49 @@
 (cl:defpackage #:kakeibo/entity/date
   (:use #:coalton
         #:coalton-prelude)
+  (:shadow #:error)
   (:local-nicknames
    (#:integral #:coalton-library/math/integral)
-   (#:valid #:kakeibo/global/valid))
+   (#:valid #:kakeibo/global/valid)
+   (#:exception #:kakeibo/global/exception))
   (:export
    #:Date
+   #:make
+   #:year #:month #:day
+
    #:Month
    #:January #:February #:March
    #:April #:May #:June #:July #:August #:September
    #:October #:November #:December
 
-   #:ErrorType
+   #:Error
    #:InvalidDate))
 
 (cl:in-package #:kakeibo/entity/date)
 
 (coalton-toplevel
+  (define-type Date (%Date Integer      ; Year
+                           Month        ; Month
+                           Integer      ; Date
+                           ))
+
+  (declare make (Integer
+                 -> Month
+                 -> Integer
+                 -> Result Error Date))
+  (define (make y m d)
+    (let date = (%Date y m d))
+    (if (valid? date)
+        (Ok date)
+        (Err InvalidDate)))
+
+  (define-type Error (InvalidDate))
+  (exception:define-exception-instance Error)
+
+  (define (year (%Date y _ _)) y)
+  (define (month (%Date _ m _)) m)
+  (define (day (%Date _ _ d)) d)
+
   (define-type Month
     January
     February
@@ -69,13 +96,8 @@
         (12 (Ok December))
         (_ (Err (<> (into m) " is not month number"))))))
 
-  (define-type Date (Date Integer       ; Year
-                          Month         ; Month
-                          Integer       ; Date
-                          ))
-
   (define-instance (Eq Date)
-    (define (== (Date y1 m1 d1) (Date y2 m2 d2))
+    (define (== (%Date y1 m1 d1) (%Date y2 m2 d2))
       (and (== y1 y2)
            (== m1 m2)
            (== d1 d2))))
@@ -85,28 +107,21 @@
          (not (and (== (integral:mod y 100) 0)
                    (/= (integral:mod y 400) 0)))))
 
-  (define-type ErrorType (InvalidDate))
-
-  (define-instance (valid:Validatable Date ErrorType)
-    (define (valid:validate (Date y m d))
-      (let valid? =
-        (and (<= 0 y)
-             (<= 1 d)
-             (match m
-               ((January)   (<= d 31))
-               ((February)  (if (leap? y)
-                                (<= d 29)
-                                (<= d 28)))
-               ((March)     (<= d 31))
-               ((April)     (<= d 30))
-               ((May)       (<= d 31))
-               ((June)      (<= d 30))
-               ((July)      (<= d 31))
-               ((August)    (<= d 31))
-               ((September) (<= d 30))
-               ((October)   (<= d 31))
-               ((November)  (<= d 30))
-               ((December)  (<= d 31)))))
-      (if valid?
-          (Ok Unit)
-          (Err InvalidDate)))))
+  (define (valid? (%Date y m d))
+    (and (<= 0 y)
+         (<= 1 d)
+         (match m
+           ((January)   (<= d 31))
+           ((February)  (if (leap? y)
+                            (<= d 29)
+                            (<= d 28)))
+           ((March)     (<= d 31))
+           ((April)     (<= d 30))
+           ((May)       (<= d 31))
+           ((June)      (<= d 30))
+           ((July)      (<= d 31))
+           ((August)    (<= d 31))
+           ((September) (<= d 30))
+           ((October)   (<= d 31))
+           ((November)  (<= d 30))
+           ((December)  (<= d 31))))))
