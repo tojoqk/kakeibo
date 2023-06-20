@@ -41,6 +41,6 @@
 
   (declare some ((Monad :m) (exception:Exception :e) =>
                  (ResultT :e :m :a) ->
-                 (ResultT exception:SomeException :m :a)))
+                 (ResultT exception:Some :m :a)))
   (define (some m)
-    (ResultT (map into (run m)))))
+    (ResultT (map (result:map-err exception:to) (run m)))))

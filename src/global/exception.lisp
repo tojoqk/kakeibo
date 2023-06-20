@@ -1,10 +1,12 @@
 (cl:defpackage #:kakeibo/global/exception
   (:use #:coalton
         #:coalton-prelude)
+  (:shadow #:some)
   (:local-nicknames
+   (#:prelude #:coalton-prelude)
    (#:result #:coalton-library/result))
   (:export
-   #:SomeException
+   #:Some
    #:Exception
    #:to
    #:from
@@ -14,21 +16,11 @@
 
 (coalton-toplevel
   (repr :native cl:t)
-  (define-type SomeException)
+  (define-type Some)
 
   (define-class (Exception :e)
-    (to (:e -> SomeException))
-    (from (SomeException -> (Optional :e))))
-
-  (define-instance (Exception SomeException)
-    (define (to e) e)
-    (define (from e) (Some e)))
-
-  (define-instance ((Exception :e) =>
-                    Into
-                    (Result :e :a)
-                    (Result SomeException :a))
-    (define (into m) (result:map-err to m))))
+    (to (:e -> Some))
+    (from (Some -> (Optional :e)))))
 
 (cl:defmacro define-exception-instance (type)
   (cl:check-type type cl:symbol)
@@ -36,10 +28,10 @@
            (se (cl:gensym "SOME")))
     `(define-instance (Exception ,type)
        (define (to ,e)
-         (lisp SomeException (,e)
+         (lisp Some (,e)
            (cl:cons ',type ,e)))
        (define (from ,se)
          (lisp (Optional ,type) (,se)
            (cl:if (cl:eq ',type (cl:car ,se))
-                  (Some (cl:cdr ,se))
+                  (prelude:Some (cl:cdr ,se))
                   None))))))
