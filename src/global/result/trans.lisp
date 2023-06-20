@@ -7,7 +7,8 @@
    (#:result #:coalton-library/result)
    (#:exception #:kakeibo/global/exception))
   (:export #:ResultT #:run
-           #:some))
+           #:some
+           #:flat #:flat*))
 
 (cl:in-package #:kakeibo/global/result/trans)
 
@@ -43,4 +44,22 @@
                  (ResultT :e :m :a) ->
                  (ResultT exception:Some :m :a)))
   (define (some m)
-    (ResultT (map (result:map-err exception:to) (run m)))))
+    (ResultT (map (result:map-err exception:to) (run m))))
+
+  (define (join mm)
+    (do (m <- mm)
+        m))
+
+  (declare flat ((Monad :m) =>
+                 ResultT :e (ResultT :e :m) :a ->
+                 ResultT :e :m :a))
+  (define (flat m)
+    (ResultT (map join (run (run m)))))
+
+  (declare flat* ((Monad :m)
+                  (exception:Exception :e1)
+                  (exception:Exception :e2) =>
+                  ResultT :e1 (ResultT :e2 :m) :a ->
+                  ResultT exception:Some :m :a))
+  (define (flat* m)
+    (ResultT (map join (run (some (run (some m))))))))
