@@ -10,6 +10,7 @@
                (:file "global/monad/trans")
                (:file "global/result/trans")
                (:file "global/valid")
+               (:file "global/time")
                (:file "global/date")
                (:file "entity/item")
                (:file "entity/transaction")
