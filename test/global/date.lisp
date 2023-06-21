@@ -9,55 +9,48 @@
 
 (coalton-fiasco-init #:kakeibo-test-fiasco)
 
-(define-test kakeibo/global/date-month ()
-  (map (fn (i)
-         (pipe i
-               (the (Integer -> Result String date:Month) tryInto)
-               (map into)
-               (== (Ok i))))
-       (range 1 12))
-  (is (pipe 0
-            (the (Integer -> Result String date:Month) tryInto)
-            result:err?))
-  (is (pipe 13
-            (the (Integer -> Result String date:Month) tryInto)
-            result:err?)))
-
 (define-test kakeibo/global/date-validation ()
   (map (fn (i)
          (pipe i
-               tryInto
-               (map (fn (m) (date:make 2022 m 32)))
-               (map result:err?)
-               (== (Ok True))))
+               (fn (m) (date:make 2022 m 32))
+               result:err?
+               (== True)))
        (range 1 12))
-  (is (pipe (date:make 2022 date:January 0)
+  (is (pipe (date:make 2022 1 0)
             result:err?))
-  (is (pipe (date:make 2022 date:January 1)
+  (is (pipe (date:make 2022 1 1)
             result:ok?))
-  (is (pipe (date:make 2022 date:January 15)
+  (is (pipe (date:make 2022 1 15)
             result:ok?))
-  (is (pipe (date:make 2022 date:January 31)
+  (is (pipe (date:make 2022 1 31)
             result:ok?))
-  (is (pipe (date:make 2022 date:January 32)
+  (is (pipe (date:make 2022 1 32)
             result:err?))
-
-  (is (pipe (date:make 2022 date:February 28)
+  (is (pipe (date:make 2022 12 15)
             result:ok?))
-  (is (pipe (date:make 2022 date:February 29)
+  (is (pipe (date:make 2022 7 15)
+            result:ok?))
+  (is (pipe (date:make 2022 0 15)
             result:err?))
-
-  (is (pipe (date:make 4620 date:February 29)
-            result:ok?))
-  (is (pipe (date:make 4620 date:February 30)
+  (is (pipe (date:make 2022 13 15)
             result:err?))
-
-  (is (pipe (date:make 2000 date:February 29)
+  
+  (is (pipe (date:make 2022 2 28)
             result:ok?))
-  (is (pipe (date:make 2000 date:February 30)
+  (is (pipe (date:make 2022 2 29)
             result:err?))
 
-  (is (pipe (date:make 2100 date:February 28)
+  (is (pipe (date:make 4620 2 29)
             result:ok?))
-  (is (pipe (date:make 2100 date:February 29)
+  (is (pipe (date:make 4620 2 30)
+            result:err?))
+
+  (is (pipe (date:make 2000 2 29)
+            result:ok?))
+  (is (pipe (date:make 2000 2 30)
+            result:err?))
+
+  (is (pipe (date:make 2100 2 28)
+            result:ok?))
+  (is (pipe (date:make 2100 2 29)
             result:err?)))

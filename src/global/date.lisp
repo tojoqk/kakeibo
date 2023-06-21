@@ -10,11 +10,6 @@
    #:make
    #:year #:month #:day
 
-   #:Month
-   #:January #:February #:March
-   #:April #:May #:June #:July #:August #:September
-   #:October #:November #:December
-
    #:Error
    #:InvalidDate))
 
@@ -22,12 +17,12 @@
 
 (coalton-toplevel
   (define-type Date (%Date Integer      ; Year
-                           Month        ; Month
-                           Integer      ; Date
+                           Integer      ; Month
+                           Integer      ; ;Date
                            ))
 
   (declare make (Integer
-                 -> Month
+                 -> Integer
                  -> Integer
                  -> Result Error Date))
   (define (make y m d)
@@ -42,58 +37,6 @@
   (define (year (%Date y _ _)) y)
   (define (month (%Date _ m _)) m)
   (define (day (%Date _ _ d)) d)
-
-  (define-type Month
-    January
-    February
-    March
-    April
-    May
-    June
-    July
-    August
-    September
-    October
-    November
-    December)
-
-  (define-instance (Into Month Integer)
-    (define (into m)
-      (match m
-        ((January)   1)
-        ((February)  2)
-        ((March)     3)
-        ((April)     4)
-        ((May)       5)
-        ((June)      6)
-        ((July)      7)
-        ((August)    8)
-        ((September) 9)
-        ((October)   10)
-        ((November)  11)
-        ((December)  12))))
-
-  (define-instance (Eq Month)
-    (define (== m1 m2)
-      (== (the Integer (into m1))
-          (into m2))))
-
-  (define-instance (TryInto Integer Month)
-    (define (tryInto m)
-      (match m
-        (1 (Ok January))
-        (2 (Ok February))
-        (3 (Ok March))
-        (4 (Ok April))
-        (5 (Ok May))
-        (6 (Ok June))
-        (7 (Ok July))
-        (8 (Ok August))
-        (9 (Ok September))
-        (10 (Ok October))
-        (11 (Ok November))
-        (12 (Ok December))
-        (_ (Err (<> (into m) " is not month number"))))))
 
   (define-instance (Eq Date)
     (define (== (%Date y1 m1 d1) (%Date y2 m2 d2))
@@ -110,17 +53,18 @@
     (and (<= 0 y)
          (<= 1 d)
          (match m
-           ((January)   (<= d 31))
-           ((February)  (if (leap? y)
-                            (<= d 29)
-                            (<= d 28)))
-           ((March)     (<= d 31))
-           ((April)     (<= d 30))
-           ((May)       (<= d 31))
-           ((June)      (<= d 30))
-           ((July)      (<= d 31))
-           ((August)    (<= d 31))
-           ((September) (<= d 30))
-           ((October)   (<= d 31))
-           ((November)  (<= d 30))
-           ((December)  (<= d 31))))))
+           (1  (<= d 31))
+           (2  (if (leap? y)
+                   (<= d 29)
+                   (<= d 28)))
+           (3  (<= d 31))
+           (4  (<= d 30))
+           (5  (<= d 31))
+           (6  (<= d 30))
+           (7  (<= d 31))
+           (8  (<= d 31))
+           (9  (<= d 30))
+           (10 (<= d 31))
+           (11 (<= d 30))
+           (12 (<= d 31))
+           (_ False)))))

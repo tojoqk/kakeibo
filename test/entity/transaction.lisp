@@ -14,7 +14,7 @@
 (coalton-toplevel
   (define it
     (transaction:transaction transaction:Income
-                             (unwrap (date:make 2023 date:January 1))
+                             (unwrap (date:make 2023 1 1))
                              (Some "Note"))))
 
 (define-test kakeibo/entity/transaction-get ()
@@ -26,7 +26,7 @@
             (== transaction:Income)))
   (is (pipe it
             transaction:get-date
-            (== (unwrap (date:make 2023 date:January 1)))))
+            (== (unwrap (date:make 2023 1 1)))))
   (is (pipe it
             transaction:get-note
             (== (Some "Note")))))
@@ -38,9 +38,9 @@
             (== transaction:Outgo)))
   (is (pipe it
             (transaction:update-date
-             (unwrap (date:make 2023 date:January 2)))
+             (unwrap (date:make 2023 1 2)))
             transaction:get-date
-            (== (unwrap (date:make 2023 date:January 2)))))
+            (== (unwrap (date:make 2023 1 2)))))
   (is (pipe it
             (transaction:update-note (Some "Note2"))
             transaction:get-note
