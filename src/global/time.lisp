@@ -8,6 +8,7 @@
    (#:exception #:kakeibo/global/exception))
   (:export #:Time
            #:make
+           #:get!
 
            #:Error #:InvalidTime
 
@@ -48,7 +49,7 @@
                 m
                 y))))))
 
-  (define (get-time!)
+  (define (get!)
     (%Time (lisp Integer () (cl:get-universal-time))))
 
   (declare seconds (Time -> Integer))
