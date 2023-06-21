@@ -19,7 +19,7 @@
 (coalton-toplevel
   (define-type Date (%Date Integer      ; Year
                            Integer      ; Month
-                           Integer      ; ;Date
+                           Integer      ; Day
                            ))
 
   (declare make (Integer
