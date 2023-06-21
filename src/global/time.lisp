@@ -5,7 +5,10 @@
            #:error)
   (:local-nicknames
    (#:integral #:coalton-library/math/integral)
-   (#:exception #:kakeibo/global/exception))
+   (#:result #:coalton-library/result)
+   (#:list #:coalton-library/list)
+   (#:exception #:kakeibo/global/exception)
+   (#:date #:kakeibo/global/date))
   (:export #:Time
            #:make
            #:get!
@@ -34,11 +37,10 @@
                  -> Integer             ; seconds
                  -> (Result Error Time)))
   (define (make y m d hs ms ss)
-    (if (not (and (valid-date? y m d)
-                  (<= 0 hs) (<= hs 23)
-                  (<= 0 ms) (<= ms 59)
-                  (<= 0 ss) (<= ss 59)))
-        (Err (InvalidTime y m d hs ms ss))
+    (if (and (result:ok? (date:make y m d))
+             (<= 0 hs) (<= hs 23)
+             (<= 0 ms) (<= ms 59)
+             (<= 0 ss) (<= ss 59))
         (Ok (%Time
              (lisp Integer (y m d hs ms ss)
                (cl:encode-universal-time
@@ -47,7 +49,8 @@
                 hs
                 d
                 m
-                y))))))
+                y))))
+        (Err (InvalidTime y m d hs ms ss))))
 
   (define (get!)
     (%Time (lisp Integer () (cl:get-universal-time))))
@@ -99,27 +102,19 @@
         (cl:declare (cl:ignore secs mins hours d m))
         y)))
 
-  (define (leap? y)
-    (and (== (integral:mod y 4) 0)
-         (not (and (== (integral:mod y 100) 0)
-                   (/= (integral:mod y 400) 0)))))
+  (declare date (Time -> date:Date))
+  (define (date t)
+    (expect "(time:date) Unexpected Error"
+            (date:make (year t)
+                       (month t)
+                       (day t))))
 
-  (define (valid-date? y m d)
-    (and (<= 1900 y)
-         (<= 1 d)
-         (match m
-           (1  (<= d 31))
-           (2  (if (leap? y)
-                   (<= d 29)
-                   (<= d 28)))
-           (3  (<= d 31))
-           (4  (<= d 30))
-           (5  (<= d 31))
-           (6  (<= d 30))
-           (7  (<= d 31))
-           (8  (<= d 31))
-           (9  (<= d 30))
-           (10 (<= d 31))
-           (11 (<= d 30))
-           (12 (<= d 31))
-           (_ False)))))
+  (define-instance (Into date:Date Time)
+    (define (into d)
+      (expect "(time:into/date/time) Unexpected Error"
+              (make (date:year d)
+                    (date:month d)
+                    (date:day d)
+                    0
+                    0
+                    0)))))
