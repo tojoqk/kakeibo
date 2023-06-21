@@ -14,6 +14,7 @@
                (:file "global/time")
                (:file "entity/item")
                (:file "entity/transaction")
+               (:file "use-case/read/transaction/with-items")
                (:file "repository/ram/package")
                (:file "repository/ram/ram")
                (:file "repository/ram/transaction")
