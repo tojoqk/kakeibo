@@ -1,15 +1,15 @@
-(defpackage #:kakeibo/test/entity/date
+(defpackage #:kakeibo/test/global/date
   (:use #:coalton-testing)
   (:local-nicknames
-   (#:date #:kakeibo/entity/date)
+   (#:date #:kakeibo/global/date)
    (#:valid #:kakeibo/global/valid)
    (#:result #:coalton-library/result)))
 
-(in-package #:kakeibo/test/entity/date)
+(in-package #:kakeibo/test/global/date)
 
 (coalton-fiasco-init #:kakeibo-test-fiasco)
 
-(define-test kakeibo/entity/date-month ()
+(define-test kakeibo/global/date-month ()
   (map (fn (i)
          (pipe i
                (the (Integer -> Result String date:Month) tryInto)
@@ -23,7 +23,7 @@
             (the (Integer -> Result String date:Month) tryInto)
             result:err?)))
 
-(define-test kakeibo/entity/date-validation ()
+(define-test kakeibo/global/date-validation ()
   (map (fn (i)
          (pipe i
                tryInto

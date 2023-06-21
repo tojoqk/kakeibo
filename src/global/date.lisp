@@ -1,4 +1,4 @@
-(cl:defpackage #:kakeibo/entity/date
+(cl:defpackage #:kakeibo/global/date
   (:use #:coalton
         #:coalton-prelude)
   (:shadow #:error)
@@ -18,7 +18,7 @@
    #:Error
    #:InvalidDate))
 
-(cl:in-package #:kakeibo/entity/date)
+(cl:in-package #:kakeibo/global/date)
 
 (coalton-toplevel
   (define-type Date (%Date Integer      ; Year

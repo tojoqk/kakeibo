@@ -2,7 +2,7 @@
   (:use #:coalton
         #:coalton-prelude)
   (:local-nicknames
-   (#:date #:kakeibo/entity/date)
+   (#:date #:kakeibo/global/date)
    (#:transaction #:kakeibo/entity/transaction)
    (#:item #:kakeibo/entity/item)
    (#:valid #:kakeibo/global/valid)

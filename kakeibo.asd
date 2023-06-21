@@ -10,7 +10,7 @@
                (:file "global/monad/trans")
                (:file "global/result/trans")
                (:file "global/valid")
-               (:file "entity/date")
+               (:file "global/date")
                (:file "entity/item")
                (:file "entity/transaction")
                (:file "repository/ram/package")
@@ -35,7 +35,7 @@
   :serial t
   :pathname "test/"
   :components ((:file "fiasco")
-               (:file "entity/date")
+               (:file "global/date")
                (:file "entity/item")
                (:file "entity/transaction")
                (:file "entity/repository")

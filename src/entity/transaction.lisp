@@ -4,7 +4,7 @@
   (:local-nicknames
    (#:tree #:coalton-library/ord-tree)
    (#:result #:coalton-library/result)
-   (#:date #:kakeibo/entity/date)
+   (#:date #:kakeibo/global/date)
    (#:valid #:kakeibo/global/valid)
    (#:string #:coalton-library/string)
    (#:result/trans #:kakeibo/global/result/trans)

@@ -2,7 +2,7 @@
   (:use #:coalton-testing)
   (:local-nicknames
    (#:valid #:kakeibo/global/valid)
-   (#:date #:kakeibo/entity/date)
+   (#:date #:kakeibo/global/date)
    (#:transaction #:kakeibo/entity/transaction)
    (#:tree #:coalton-library/ord-tree)
    (#:result #:coalton-library/result)))
