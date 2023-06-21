@@ -4,7 +4,6 @@
   (:shadow #:error)
   (:local-nicknames
    (#:integral #:coalton-library/math/integral)
-   (#:valid #:kakeibo/global/valid)
    (#:exception #:kakeibo/global/exception))
   (:export
    #:Date
