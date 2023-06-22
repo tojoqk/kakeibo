@@ -22,17 +22,15 @@
 (cl:in-package #:kakeibo/use-case/transaction-with-items)
 
 (coalton-toplevel
-  (define-type (Record :TransactionId
-                       :ItemId)
-    (Record (transaction:Transaction :TransactionId)
-            (List (item:Item :ItemId :TransactionId))))
+  (define-type (Record :id :itemId)
+    (Record (transaction:Transaction :id)
+            (List (item:Item :itemId :id))))
 
   (define-type ReadError NotFound)
   (exception:define-exception-instance ReadError)
 
-  (define-class (Monad :m => Read :m :TransactionId :ItemId (:m -> :TransactionId :ItemId))
-    (read (:TransactionId
-           -> result/t:ResultT ReadError :m (Record :TransactionId :ItemId))))
+  (define-class (Monad :m => Read :m :id :itemId (:m -> :id :itemId))
+    (read (:id -> result/t:ResultT ReadError :m (Record :id :itemId))))
 
   (define-type SearchCondition
     (SearchCondition
@@ -41,11 +39,10 @@
      (Optional String)                  ; note
      ))
 
-  (define-class (Monad :m => Search :m :TransactionId :ItemId (:m -> :TransactionId :ItemId))
+  (define-class (Monad :m => Search :m :id :itemId (:m -> :id :itemId))
     (search (SearchCondition
-             -> :m (iter:Iterator (Record :TransactionId :ItemId)))))
+             -> :m (iter:Iterator (Record :id :itemId)))))
 
   (declare amount (Record :id :itemId -> Integer))
   (define (amount (Record _ items))
     (sum (map item:get-amount items))))
-
