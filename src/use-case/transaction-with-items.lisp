@@ -11,7 +11,7 @@
    (#:exception #:kakeibo/global/exception))
   (:export
    #:Record
-   #:Read
+   #:Read %read
    #:ReadError #:NotFound
 
    #:Search
@@ -23,14 +23,25 @@
 
 (coalton-toplevel
   (define-type (Record :id :itemId)
-    (Record (transaction:Transaction :id)
-            (List (item:Item :itemId :id))))
+    (%Record (transaction:Transaction :id)
+             (List (item:Item :itemId :id))))
+
+  (define (transaction (%Record trx _)) trx)
+  (define (items (%Record _ itms)) itms)
 
   (define-type ReadError NotFound)
   (exception:define-exception-instance ReadError)
 
   (define-class (Monad :m => Read :m :id :itemId (:m -> :id :itemId))
-    (read (:id -> result/t:ResultT ReadError :m (Record :id :itemId))))
+    (%read (:id
+            -> (result/t:ResultT ReadError :m
+                                 (Tuple (transaction:Transaction :id)
+                                        (List (item:Item :itemId :id)))))))
+
+  (declare read (Read :m :id :itemId => :id -> result/t:ResultT ReadError :m (Record :id :itemId)) )
+  (define (read id)
+    (do ((Tuple trx itms) <- (%read id))
+        (pure (%Record trx itms))))
 
   (define-type SearchCondition
     (SearchCondition
@@ -40,9 +51,20 @@
      ))
 
   (define-class (Monad :m => Search :m :id :itemId (:m -> :id :itemId))
-    (search (SearchCondition
-             -> :m (iter:Iterator (Record :id :itemId)))))
+    (%search (SearchCondition
+              -> :m (iter:Iterator
+                     (Tuple (transaction:Transaction :id)
+                            (List (item:Item :itemId :id)))))))
+
+  (declare search (Search :m :id :itemId =>
+                          SearchCondition
+                          -> :m (iter:Iterator (Record :id :itemId))))
+  (define (search sc)
+    (do (iter <- (%search sc))
+        (pure (map (fn ((Tuple trx itms))
+                     (%Record trx itms))
+                   iter))))
 
   (declare amount (Record :id :itemId -> Integer))
-  (define (amount (Record _ items))
-    (sum (map item:get-amount items))))
+  (define (amount (%Record _ itms))
+    (sum (map item:get-amount itms))))
