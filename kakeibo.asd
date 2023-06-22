@@ -1,7 +1,7 @@
 (asdf:defsystem #:kakeibo
   :description "Managing my personal household accounts"
   :author "Masaya Tojo"
-  :license  "BSD"
+  :license  "MIT"
   :version "0.0.0"
   :depends-on (#:coalton)
   :serial t
@@ -23,7 +23,7 @@
 (asdf:defsystem #:kakeibo/test
   :description "Tests for kakeibo"
   :author "Masaya Tojo"
-  :license  "BSD"
+  :license  "MIT"
   :version "0.0.0"
   :depends-on (#:kakeibo
                #:coalton/testing)
