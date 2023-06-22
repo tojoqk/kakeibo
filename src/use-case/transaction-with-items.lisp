@@ -8,7 +8,16 @@
    (#:item #:kakeibo/entity/item)
    (#:result/t #:kakeibo/global/result/trans)
    (#:date #:kakeibo/global/date)
-   (#:exception #:kakeibo/global/exception)))
+   (#:exception #:kakeibo/global/exception))
+  (:export
+   #:Record
+   #:Read
+   #:ReadError #:NotFound
+
+   #:Search
+   #:SearchCondition
+
+   #:amount))
 
 (cl:in-package #:kakeibo/use-case/transaction-with-items)
 
@@ -34,5 +43,9 @@
 
   (define-class (Monad :m => Search :m :TransactionId :ItemId (:m -> :TransactionId :ItemId))
     (search (SearchCondition
-             -> :m (iter:Iterator (Record :TransactionId :ItemId))))))
+             -> :m (iter:Iterator (Record :TransactionId :ItemId)))))
+
+  (declare amount (Record :id :itemId -> Integer))
+  (define (amount (Record _ items))
+    (sum (map item:get-amount items))))
 
