@@ -72,15 +72,15 @@
       (do
        (v <- (result/t:some (valid it/trx)))
        (id <- (trans:lift (transaction:create v)))
-        (trx <- (result/t:some (transaction:read id)))
-        (pure
-         (and (== id (transaction:get-id trx))
-              (== (transaction:get-type it/trx)
-                  (transaction:get-type trx))
-              (== (transaction:get-date it/trx)
-                  (transaction:get-date trx))
-              (== (transaction:get-note it/trx)
-                  (transaction:get-note trx))))))))
+       (trx <- (result/t:some (transaction:read id)))
+       (pure
+        (and (== id (transaction:get-id trx))
+             (== (transaction:get-type it/trx)
+                 (transaction:get-type trx))
+             (== (transaction:get-date it/trx)
+                 (transaction:get-date trx))
+             (== (transaction:get-note it/trx)
+                 (transaction:get-note trx))))))))
 
   (define (test-transaction-update)
     (to-test
