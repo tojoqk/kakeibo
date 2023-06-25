@@ -18,7 +18,11 @@
                (:file "repository/ram/package")
                (:file "repository/ram/ram")
                (:file "repository/ram/transaction")
-               (:file "repository/ram/item")))
+               (:file "repository/ram/item")
+               (:file "repository/tree/package")
+               (:file "repository/tree/tree")
+               (:file "repository/tree/transaction")
+               (:file "repository/tree/item")))
 
 (asdf:defsystem #:kakeibo/test
   :description "Tests for kakeibo"
@@ -41,4 +45,5 @@
                (:file "entity/item")
                (:file "entity/transaction")
                (:file "entity/repository")
-               (:file "repository/ram")))
+               (:file "repository/ram")
+               (:file "repository/tree")))
