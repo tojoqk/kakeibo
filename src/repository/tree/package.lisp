@@ -12,4 +12,5 @@
    (#:map #:coalton-library/ord-map)
    (#:result/t #:kakeibo/global/result/trans)
    (#:trans #:kakeibo/global/monad/trans)
-   (#:exception #:kakeibo/global/exception)))
+   (#:exception #:kakeibo/global/exception))
+  (:export #:init))

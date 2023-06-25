@@ -8,6 +8,11 @@
                     (Tuple (transaction:Transaction TransactionId)
                            (map:Map ItemId (item:Item ItemId TransactionId))))))
 
+  (define init
+    (%Tree 1
+           1
+           map:empty))
+
   (repr :transparent)
   (define-type TransactionId (TransactionId Integer))
 
