@@ -22,7 +22,8 @@
                (:file "repository/tree/package")
                (:file "repository/tree/tree")
                (:file "repository/tree/transaction")
-               (:file "repository/tree/item")))
+               (:file "repository/tree/item")
+               (:file "repository/tree/transaction-with-items")))
 
 (asdf:defsystem #:kakeibo/test
   :description "Tests for kakeibo"
@@ -45,5 +46,6 @@
                (:file "entity/item")
                (:file "entity/transaction")
                (:file "entity/repository")
+               (:file "use-case/repository")
                (:file "repository/ram")
                (:file "repository/tree")))

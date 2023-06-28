@@ -3,7 +3,8 @@
   (:local-nicknames
    (#:tree #:kakeibo/repository/tree)
    (#:st #:coalton-library/monad/state)
-   (#:entity #:kakeibo/test/entity/repository)))
+   (#:entity #:kakeibo/test/entity/repository)
+   (#:use-case #:kakeibo/test/use-case/repository)))
 
 (in-package #:kakeibo/test/repository/tree)
 
@@ -44,3 +45,6 @@
 (add-test entity:test-item-NotFoundOnUpdate-error)
 (add-test entity:test-item-TransactionNotFoundOnUpdate-error)
 (add-test entity:test-item-NotFoundOnDelete-error)
+
+(add-test use-case:test-transaction-with-items-read)
+(add-test use-case:test-transaction-with-items-search-case-1)
