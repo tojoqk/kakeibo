@@ -13,6 +13,7 @@
    #:Record
    #:Read %read
    #:ReadError #:NotFound
+   #:transaction #:items
 
    #:Search %search
    #:SearchCondition
