@@ -25,6 +25,14 @@
   (define-type Time
     (%Time Integer))
 
+  (define-instance (Eq Time)
+    (define (== (%Time x) (%Time y))
+      (== x y)))
+
+  (define-instance (Ord Time)
+    (define (<=> (%Time x) (%Time y))
+      (<=> x y)))
+
   (define-type Error
     (InvalidTime Integer Integer Integer Integer Integer Integer))
   (exception:define-exception-instance Error)
