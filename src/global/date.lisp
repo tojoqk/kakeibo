@@ -43,6 +43,15 @@
            (== m1 m2)
            (== d1 d2))))
 
+  (define-instance (Ord Date)
+    (define (<=> (%Date y1 m1 d1) (%Date y2 m2 d2))
+      (match (<=> y1 y2)
+        ((EQ)
+         (match (<=> m1 m2)
+           ((EQ) (<=> d1 d2))
+           (other other)))
+        (other other))))
+
   (define (leap? y)
     (and (== (integral:mod y 4) 0)
          (not (and (== (integral:mod y 100) 0)
