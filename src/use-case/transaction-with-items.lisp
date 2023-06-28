@@ -14,7 +14,7 @@
    #:Read %read
    #:ReadError #:NotFound
 
-   #:Search
+   #:Search %search
    #:SearchCondition
 
    #:amount))
