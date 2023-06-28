@@ -46,7 +46,7 @@
 
   (define-type SearchCondition
     (SearchCondition
-     (Optional date:date)               ; start date
+     (Optional date:Date)               ; start date
      (Optional date:Date)               ; end date
      (Optional String)                  ; note
      ))
