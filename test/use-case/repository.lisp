@@ -113,10 +113,12 @@
                                                 (Some date2)
                                                 None)))
        (rec-trx3 <- (nest result/t:some result/t:hoist
-                          result:from-optional
+                          (result:from-optional
+                           (exception:Error "Empty Unit"))
                           (iter:next! iter)))
        (rec-trx2 <- (nest result/t:some result/t:hoist
-                          result:from-optional
+                          (result:from-optional
+                           (exception:Error "Empty Unit"))
                           (iter:next! iter)))
        (pure (and (== (trx:get-id (trx/itms:transaction rec-trx2))
                       tid2)

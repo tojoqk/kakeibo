@@ -1,7 +1,7 @@
 (cl:defpackage #:kakeibo/global/exception
   (:use #:coalton
         #:coalton-prelude)
-  (:shadow #:some)
+  (:shadow #:some #:error)
   (:local-nicknames
    (#:prelude #:coalton-prelude)
    (#:result #:coalton-library/result))
@@ -10,6 +10,7 @@
    #:Exception
    #:to
    #:from
+   #:Error
    #:define-exception-instance))
 
 (cl:in-package #:kakeibo/global/exception)
@@ -24,7 +25,9 @@
 
   (define-instance (Exception Some)
     (define (to e) e)
-    (define (from e) (prelude:Some e))))
+    (define (from e) (prelude:Some e)))
+  )
+
 
 (cl:defmacro define-exception-instance (type)
   (cl:check-type type cl:symbol)
@@ -39,3 +42,7 @@
            (cl:if (cl:eq ',type (cl:car ,se))
                   (prelude:Some (cl:cdr ,se))
                   None))))))
+
+(coalton-toplevel
+  (define-type Error (Error String))
+  (define-exception-instance Error))
