@@ -48,8 +48,9 @@
                (Some "Note")))
 
   (define (valid x)
-    (nest result/t:ResultT
-          pure valid:valid x))
+    (nest result/t:some
+          result/t:ResultT
+          pure (valid:valid x)))
 
   (define (to-test m)
     (map (fn (res)
@@ -62,16 +63,15 @@
     (to-test
      (result/t:run
       (do
-       (v <- (result/t:some (valid it/trx)))
-       (trans:lift (transaction:create v))
+       (>>= (valid it/trx)
+            (.< trans:lift transaction:create))
        (pure True)))))
 
   (define (test-transaction-read)
     (to-test
      (result/t:run
       (do
-       (v <- (result/t:some (valid it/trx)))
-       (id <- (trans:lift (transaction:create v)))
+       (id <- (>>= (valid it/trx) (.< trans:lift transaction:create)))
        (trx <- (result/t:some (transaction:read id)))
        (pure
         (and (== id (transaction:get-id trx))
@@ -86,13 +86,10 @@
     (to-test
      (result/t:run
       (do
-       (v <- (result/t:some (valid it/trx)))
-       (id <- (trans:lift (transaction:create v)))
+       (id <- (>>= (valid it/trx) (.< trans:lift transaction:create)))
        (trx <- (result/t:some (transaction:read id)))
-       (v <- (result/t:some
-              (valid (transaction:update-note (Some "Note2")
-                                              trx))))
-       (result/t:some (transaction:update v))
+       (>>= (valid (transaction:update-note (Some "Note2") trx))
+            (.< result/t:some transaction:update))
        (trx <- (result/t:some (transaction:read id)))
        (pure
         (and (== id
@@ -110,8 +107,8 @@
     (to-test
      (result/t:run
       (do
-       (v <- (result/t:some (valid it/trx)))
-       (id <- (trans:lift (transaction:create v)))
+       (id <- (>>= (valid it/trx)
+                   (.< trans:lift transaction:create)))
        (result/t:some (transaction:delete id))
        (pure True)))))
 
@@ -119,9 +116,10 @@
     (to-test
      (result/t:run
       (do
-       (v <- (result/t:some (valid it/trx)))
-       (id1 <- (trans:lift (transaction:create v)))
-       (id2 <- (trans:lift (transaction:create v)))
+       (id1 <- (>>= (valid it/trx)
+                    (.< trans:lift transaction:create)))
+       (id2 <- (>>= (valid it/trx)
+                    (.< trans:lift transaction:create)))
        (pure (/= id1 id2))))))
 
   (define (test-transaction-NotFoundOnRead-error)
@@ -131,8 +129,8 @@
              (_ False)))
          (result/t:run
           (do
-           (v <- (result/t:some (valid it/trx)))
-           (id <- (trans:lift (transaction:create v)))
+           (id <- (>>= (valid it/trx)
+                       (.< trans:lift transaction:create)))
            (result/t:some (transaction:delete id))
            (result/t:some (transaction:read id))))))
 
@@ -143,12 +141,12 @@
              (_ False)))
          (result/t:run
           (do
-           (v <- (result/t:some (valid it/trx)))
-           (id <- (trans:lift (transaction:create v)))
+           (id <- (>>= (valid it/trx)
+                       (.< trans:lift transaction:create)))
            (trx <- (result/t:some (transaction:read id)))
-           (v <- (result/t:some (valid trx)))
            (result/t:some (transaction:delete id))
-           (result/t:some (transaction:update v))))))
+           (result/t:some (>>= (valid trx)
+                               (.< result/t:some transaction:update)))))))
 
   (define (test-transaction-NotFoundOnDelete-error)
     (map (fn (res)
@@ -157,8 +155,8 @@
              (_ False)))
          (result/t:run
           (do
-           (v <- (result/t:some (valid it/trx)))
-           (id <- (trans:lift (transaction:create v)))
+           (id <- (>>= (valid it/trx)
+                       (.< trans:lift transaction:create)))
            (result/t:some (transaction:delete id))
            (result/t:some (transaction:delete id))))))
 
@@ -169,57 +167,55 @@
              (_ False)))
          (result/t:run
           (do
-           (v <- (result/t:some (valid it/trx)))
-           (id <- (trans:lift (transaction:create v)))
-           (v <- (result/t:some (valid (it/itm id))))
-           (result/t:some (item:create v))
+           (id <- (>>= (valid it/trx)
+                       (.< trans:lift transaction:create)))
+           (>>= (valid (it/itm id))
+                (.< result/t:some item:create))
            (result/t:some (transaction:delete id))))))
 
   (define (test-item-create)
     (to-test
      (result/t:run
       (do
-       (v <- (result/t:some (valid it/trx)))
-       (tid <- (trans:lift (transaction:create v)))
-       (v <- (result/t:some (valid (it/itm tid))))
-       (result/t:some (item:create v))
+       (tid <- (>>= (valid it/trx)
+                    (.< trans:lift transaction:create)))
+       (>>= (valid (it/itm tid))
+            (.< result/t:some item:create))
        (pure True)))))
 
   (define (test-item-read)
     (to-test
      (result/t:run
       (do
-       (v <- (result/t:some (valid it/trx)))
-       (tid <- (trans:lift (transaction:create v)))
-       (v <- (result/t:some (valid (it/itm tid))))
-       (id <- (result/t:some (item:create v)))
+       (tid <- (>>= (valid it/trx)
+                    (.< trans:lift transaction:create)))
+       (id <- (>>= (valid (it/itm tid))
+                   (.< result/t:some item:create)))
        (itm <- (result/t:some (item:read id)))
        (pure
-        (and (== id (item:get-id itm))
-             (== tid
-                 (item:get-transaction-id itm))
-             (== (item:get-category (it/itm tid))
-                 (item:get-category itm))
-             (== (item:get-subcategory (it/itm tid))
-                 (item:get-subcategory itm))
-             (== (item:get-amount (it/itm tid))
-                 (item:get-amount itm))
-             (== (item:get-note (it/itm tid))
-                 (item:get-note itm))))))))
+         (and (== id (item:get-id itm))
+              (== tid
+                  (item:get-transaction-id itm))
+              (== (item:get-category (it/itm tid))
+                  (item:get-category itm))
+              (== (item:get-subcategory (it/itm tid))
+                  (item:get-subcategory itm))
+              (== (item:get-amount (it/itm tid))
+                  (item:get-amount itm))
+              (== (item:get-note (it/itm tid))
+                  (item:get-note itm))))))))
 
   (define (test-item-update)
     (to-test
      (result/t:run
       (do
-       (v <- (result/t:some (valid it/trx)))
-       (tid <- (trans:lift (transaction:create v)))
-       (v <- (result/t:some (valid (it/itm tid))))
-       (id <- (result/t:some (item:create v)))
+       (tid <- (>>= (valid it/trx)
+                    (.< trans:lift transaction:create)))
+       (id <- (>>= (valid (it/itm tid))
+                   (.< result/t:some item:create)))
        (itm <- (result/t:some (item:read id)))
-       (v <- (result/t:some
-              (valid
-               (item:update-amount 9999 itm))))
-       (result/t:some (item:update v))
+       (>>= (valid (item:update-amount 9999 itm))
+            (.< result/t:some item:update))
        (itm <- (result/t:some (item:read id)))
        (pure
         (and (== id (item:get-id itm))
@@ -240,10 +236,10 @@
     (to-test
      (result/t:run
       (do
-       (v <- (result/t:some (valid it/trx)))
-       (tid <- (trans:lift (transaction:create v)))
-       (v <- (result/t:some (valid (it/itm tid))))
-       (id <- (result/t:some (item:create v)))
+       (tid <- (>>= (valid it/trx)
+                    (.< trans:lift transaction:create)))
+       (id <- (>>= (valid (it/itm tid))
+                   (.< result/t:some item:create)))
        (result/t:some (item:delete id))
        (pure True)))))
 
@@ -251,11 +247,12 @@
     (to-test
      (result/t:run
       (do
-       (v <- (result/t:some (valid it/trx)))
-       (tid <- (trans:lift (transaction:create v)))
-       (v <- (result/t:some (valid (it/itm tid))))
-       (id1 <- (result/t:some (item:create v)))
-       (id2 <- (result/t:some (item:create v)))
+       (tid <- (>>= (valid it/trx)
+                    (.< trans:lift transaction:create)))
+       (id1 <- (>>= (valid (it/itm tid))
+                    (.< result/t:some item:create)))
+       (id2 <- (>>= (valid (it/itm tid))
+                    (.< result/t:some item:create)))
        (pure (/= id1 id2))))))
 
   (define (test-item-TransactionNotFoundOnCreate-error)
@@ -265,11 +262,11 @@
              (_ False)))
          (result/t:run
           (do
-           (v <- (result/t:some (valid it/trx)))
-           (tid <- (trans:lift (transaction:create v)))
+           (tid <- (>>= (valid it/trx)
+                        (.< trans:lift transaction:create)))
            (result/t:some (transaction:delete tid))
-           (v <- (result/t:some (valid (it/itm tid))))
-           (result/t:some (item:create v))))))
+           (>>= (valid (it/itm tid))
+                (.< result/t:some item:create))))))
 
   (define (test-item-NotFoundOnRead-error)
     (map (fn (res)
@@ -278,10 +275,10 @@
              (_ False)))
          (result/t:run
           (do
-           (v <- (result/t:some (valid it/trx)))
-           (tid <- (trans:lift (transaction:create v)))
-           (v <- (result/t:some (valid (it/itm tid))))
-           (id <- (result/t:some (item:create v)))
+           (tid <- (>>= (valid it/trx)
+                        (.< trans:lift transaction:create)))
+           (id <- (>>= (valid (it/itm tid))
+                       (.< result/t:some item:create)))
            (result/t:some (item:delete id))
            (result/t:some (item:read id))))))
 
@@ -292,14 +289,14 @@
              (_ False)))
          (result/t:run
           (do
-           (v <- (result/t:some (valid it/trx)))
-           (tid <- (trans:lift (transaction:create v)))
-           (v <- (result/t:some (valid (it/itm tid))))
-           (id <- (result/t:some (item:create v)))
+           (tid <- (>>= (valid it/trx)
+                        (.< trans:lift transaction:create)))
+           (id <- (>>= (valid (it/itm tid))
+                       (.< result/t:some item:create)))
            (itm <- (result/t:some (item:read id)))
            (result/t:some (item:delete id))
-           (v <- (result/t:some (valid itm)))
-           (result/t:some (item:update v))))))
+           (>>= (valid itm)
+                (.< result/t:some item:update))))))
 
   (define (test-item-TransactionNotFoundOnUpdate-error)
     (map (fn (res)
@@ -308,14 +305,14 @@
              (_ False)))
          (result/t:run
           (do
-           (v <- (result/t:some (valid it/trx)))
-           (tid <- (trans:lift (transaction:create v)))
-           (v <- (result/t:some (valid (it/itm tid))))
-           (id <- (result/t:some (item:create v)))
+           (tid <- (>>= (valid it/trx)
+                        (.< trans:lift transaction:create)))
+           (id <- (>>= (valid (it/itm tid))
+                       (.< result/t:some item:create)))
            (itm <- (result/t:some (item:read id)))
            (result/t:some (item:delete id))
-           (v <- (result/t:some (valid itm)))
-           (result/t:some (item:update v))))))
+           (>>= (valid itm)
+                (.< result/t:some item:update))))))
 
   (define (test-item-NotFoundOnDelete-error)
     (map (fn (res)
@@ -324,9 +321,9 @@
              (_ False)))
          (result/t:run
           (do
-           (v <- (result/t:some (valid it/trx)))
-           (tid <- (trans:lift (transaction:create v)))
-           (v <- (result/t:some (valid (it/itm tid))))
-           (id <- (result/t:some (item:create v)))
+           (tid <- (>>= (valid it/trx)
+                        (.< trans:lift transaction:create)))
+           (id <- (>>= (valid (it/itm tid))
+                       (.< result/t:some item:create)))
            (result/t:some (item:delete id))
            (result/t:some (item:delete id)))))))
