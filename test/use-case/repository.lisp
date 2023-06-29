@@ -7,7 +7,7 @@
    (#:itm #:kakeibo/entity/item)
    (#:trx/itms #:kakeibo/use-case/transaction-with-items)
    (#:valid #:kakeibo/global/valid)
-   (#:result #:coalton-library/result)
+   (#:result #:kakeibo/global/result)
    (#:result/t #:kakeibo/global/result/trans)
    (#:trans #:kakeibo/global/monad/trans)
    (#:exception #:kakeibo/global/exception)
@@ -25,10 +25,12 @@
              ((Err _) False)))
          m))
 
-  (define it/trx
-    (trx:transaction trx:Income
-                     (unwrap (date:make 2023 1 1))
-                     (Some "Note")))
+  (define (it/trx)
+    (nest result/t:some result/t:hoist
+          (do (d <- (date:make 2023 1 1))
+              (pure (trx:transaction trx:Income
+                                     d
+                                     (Some "Note"))))))
 
   (define (it/itm tid)
     (itm:item tid
@@ -37,20 +39,32 @@
               100
               (Some "Note")))
 
+  (define (valid x)
+    (nest result/t:some
+          result/t:ResultT
+          pure valid:valid x))
+
   (define (test-transaction-with-items-read)
     (to-test
      (result/t:run
       (do
-       (tid <- (trans:lift (trx:create (unwrap (valid:valid it/trx)))))
-       (tid2 <- (trans:lift (trx:create (unwrap (valid:valid it/trx)))))
+       (trx <- (it/trx))
+       (tid <- (>>= (valid trx)
+                    (.< trans:lift trx:create)))
+       (tid2 <- (>>= (valid trx)
+                     (.< trans:lift trx:create)))
        (let itm1 = (itm:update-category "Item1" (it/itm tid)))
        (let itm2 = (itm:update-category "Item2" (it/itm tid)))
        (let itm3 = (itm:update-category "Item3" (it/itm tid)))
        (let itm-other = (itm:update-category "Item Other" (it/itm tid2)))
-       (_ <- (result/t:some (itm:create (unwrap (valid:valid itm1)))))
-       (_ <- (result/t:some (itm:create (unwrap (valid:valid itm2)))))
-       (_ <- (result/t:some (itm:create (unwrap (valid:valid itm3)))))
-       (_ <- (result/t:some (itm:create (unwrap (valid:valid itm-other)))))
+       (_ <- (>>= (valid itm1)
+                  (.< result/t:some itm:create)))
+       (_ <- (>>= (valid itm2)
+                  (.< result/t:some itm:create)))
+       (_ <- (>>= (valid itm3)
+                  (.< result/t:some itm:create)))
+       (_ <- (>>= (valid itm-other)
+                  (.< result/t:some itm:create)))
        (rec <- (result/t:some (trx/itms:read tid)))
        (pure (and (== (trx:get-id (trx/itms:transaction rec))
                       tid)
@@ -61,29 +75,49 @@
     (to-test
      (result/t:run
       (do
-       (let trx1 = (trx:update-date (unwrap (date:make 2022 1 1)) it/trx))
-       (let trx2 = (trx:update-date (unwrap (date:make 2023 1 1)) it/trx))
-       (let trx3 = (trx:update-date (unwrap (date:make 2023 1 15)) it/trx))
-       (let trx4 = (trx:update-date (unwrap (date:make 2023 10 1)) it/trx))
-       (_tid1 <- (trans:lift (trx:create (unwrap (valid:valid trx1)))))
-       (tid2 <- (trans:lift (trx:create (unwrap (valid:valid trx2)))))
-       (tid3 <- (trans:lift (trx:create (unwrap (valid:valid trx3)))))
-       (tid4 <- (trans:lift (trx:create (unwrap (valid:valid trx4)))))
+       (trx <- (it/trx))
+       (trx1 <- (nest result/t:some result/t:hoist
+                      (do
+                       (d <- (date:make 2022 1 1))
+                       (pure (trx:update-date d trx)))))
+       (trx2 <- (nest result/t:some result/t:hoist
+                      (do
+                       (d <- (date:make 2023 1 1))
+                       (pure (trx:update-date d trx)))))
+       (trx3 <- (nest result/t:some result/t:hoist
+                      (do
+                       (d <- (date:make 2023 1 15))
+                       (pure (trx:update-date d trx)))))
+       (trx4 <- (nest result/t:some result/t:hoist
+                      (do
+                       (d <- (date:make 2023 10 1))
+                       (pure (trx:update-date d trx)))))
+       (_tid1 <- (>>= (valid trx1) (.< trans:lift trx:create)))
+       (tid2 <- (>>= (valid trx2) (.< trans:lift trx:create)))
+       (tid3 <- (>>= (valid trx3) (.< trans:lift trx:create)))
+       (tid4 <- (>>= (valid trx4) (.< trans:lift trx:create)))
        (let itm1 = (itm:update-category "Item1" (it/itm tid2)))
        (let itm2 = (itm:update-category "Item2" (it/itm tid2)))
        (let itm3 = (itm:update-category "Item3" (it/itm tid2)))
        (let itm-other = (itm:update-category "Item Other" (it/itm tid4)))
-       (_ <- (result/t:some (itm:create (unwrap (valid:valid itm1)))))
-       (_ <- (result/t:some (itm:create (unwrap (valid:valid itm2)))))
-       (_ <- (result/t:some (itm:create (unwrap (valid:valid itm3)))))
-       (_ <- (result/t:some (itm:create (unwrap (valid:valid itm-other)))))
-       (iter <- (trans:lift (trx/itms:search
-                             (trx/itms:SearchCondition
-                              (Some (unwrap (date:make 2023 1 1)))
-                              (Some (unwrap (date:make 2023 9 30)))
-                              None))))
-       (let rec-trx3 = (unwrap (iter:next! iter)))
-       (let rec-trx2 = (unwrap (iter:next! iter)))
+       (_ <- (>>= (valid itm1) (.< result/t:some itm:create)))
+       (_ <- (>>= (valid itm2) (.< result/t:some itm:create)))
+       (_ <- (>>= (valid itm3) (.< result/t:some itm:create)))
+       (_ <- (>>= (valid itm-other) (.< result/t:some itm:create)))
+       (date1 <- (nest result/t:some result/t:hoist
+                       (date:make 2023 1 1)))
+       (date2 <- (nest result/t:some result/t:hoist
+                       (date:make 2023 9 30)))
+       (iter <- (nest trans:lift trx/itms:search
+                      (trx/itms:SearchCondition (Some date1)
+                                                (Some date2)
+                                                None)))
+       (rec-trx3 <- (nest result/t:some result/t:hoist
+                          result:from-optional
+                          (iter:next! iter)))
+       (rec-trx2 <- (nest result/t:some result/t:hoist
+                          result:from-optional
+                          (iter:next! iter)))
        (pure (and (== (trx:get-id (trx/itms:transaction rec-trx2))
                       tid2)
                   (== (trx:get-id (trx/itms:transaction rec-trx3))
