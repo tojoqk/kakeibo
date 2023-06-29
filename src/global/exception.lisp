@@ -25,9 +25,7 @@
 
   (define-instance (Exception Some)
     (define (to e) e)
-    (define (from e) (prelude:Some e)))
-  )
-
+    (define (from e) (prelude:Some e))))
 
 (cl:defmacro define-exception-instance (type)
   (cl:check-type type cl:symbol)
