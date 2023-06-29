@@ -7,6 +7,7 @@
   :serial t
   :pathname "src/"
   :components ((:file "global/exception")
+               (:file "global/result")
                (:file "global/monad/trans")
                (:file "global/result/trans")
                (:file "global/valid")
