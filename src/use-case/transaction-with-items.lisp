@@ -53,15 +53,19 @@
 
   (define-class (Monad :m => Search :m :id :itemId (:m -> :id :itemId))
     (%search (SearchCondition
+              -> UFix ; offset
+              -> UFix ; limit
               -> :m (iter:Iterator
                      (Tuple (transaction:Transaction :id)
                             (List (item:Item :itemId :id)))))))
 
-  (declare search (Search :m :id :itemId =>
-                          SearchCondition
+  (declare search (Search :m :id :itemId
+                          => SearchCondition
+                          -> UFix
+                          -> UFix
                           -> :m (iter:Iterator (Record :id :itemId))))
-  (define (search sc)
-    (do (iter <- (%search sc))
+  (define (search sc offset limit)
+    (do (iter <- (%search sc offset limit))
         (pure (map (fn ((Tuple trx itms))
                      (%Record trx itms))
                    iter))))

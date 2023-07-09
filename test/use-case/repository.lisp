@@ -108,10 +108,13 @@
                        (date:make 2023 1 1)))
        (date2 <- (nest result/t:some result/t:hoist
                        (date:make 2023 9 30)))
-       (iter <- (nest trans:lift trx/itms:search
-                      (trx/itms:SearchCondition (Some date1)
-                                                (Some date2)
-                                                None)))
+       (iter <- (nest trans:lift
+                      (trx/itms:search
+                       (trx/itms:SearchCondition (Some date1)
+                                                 (Some date2)
+                                                 None)
+                       0
+                       20)))
        (rec-trx3 <- (nest result/t:some result/t:hoist
                           (result:from-optional
                            (exception:Error "Empty Unit"))

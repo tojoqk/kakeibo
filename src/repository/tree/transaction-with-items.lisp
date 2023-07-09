@@ -28,11 +28,20 @@
               ((None) False)))
            ((None) True))))
 
+  (declare iter-drop! (UFix -> iter:Iterator :a -> iter:Iterator :a))
+  (define (iter-drop! count iter)
+    (lisp Unit (count iter)
+      (cl:dotimes (i count Unit)
+        (iter:next! iter)))
+    iter)
+
   (define-instance (trx/itms:Search (st:St Tree) TransactionId ItemId)
-    (define (trx/itms:%search cnd)
+    (define (trx/itms:%search cnd offset limit)
       (>>= st:get
            (fn ((%Tree _ _ trx-mp))
              (pipe (map:values trx-mp)
                    (iter:filter! (.< (trx-match cnd) fst))
+                   (iter-drop! offset)
+                   (iter:take! limit)
                    (map (map-snd (.< iter:collect! map:values)))
                    pure))))))
