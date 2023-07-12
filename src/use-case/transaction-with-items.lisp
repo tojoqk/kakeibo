@@ -6,6 +6,7 @@
    (#:iter #:coalton-library/iterator)
    (#:transaction #:kakeibo/entity/transaction)
    (#:item #:kakeibo/entity/item)
+   (#:currency #:kakeibo/entity/currency)
    (#:result/t #:kakeibo/global/result/trans)
    (#:date #:kakeibo/global/date)
    (#:exception #:kakeibo/global/exception))
@@ -70,6 +71,6 @@
                      (%Record trx itms))
                    iter))))
 
-  (declare amount (Record :id :itemId -> Integer))
+  (declare amount (currency:Currency :c => Record :id :itemId -> :c))
   (define (amount (%Record _ itms))
     (sum (map item:get-amount itms))))

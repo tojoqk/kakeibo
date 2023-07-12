@@ -14,6 +14,8 @@
                (:file "global/date")
                (:file "global/time")
                (:file "global/presenter")
+               (:file "entity/currency")
+               (:file "entity/currency/yen")
                (:file "entity/item")
                (:file "entity/transaction")
                (:file "use-case/transaction-with-items")

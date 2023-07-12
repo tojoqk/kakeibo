@@ -3,6 +3,7 @@
   (:local-nicknames
    (#:valid #:kakeibo/global/valid)
    (#:item #:kakeibo/entity/item)
+   (#:yen #:kakeibo/entity/currency/yen)
    (#:tree #:coalton-library/ord-tree)
    (#:result #:coalton-library/result)))
 
@@ -46,7 +47,7 @@
             (== (Some "Subcategory"))))
   (is (pipe it
             item:get-amount
-            (== 100)))
+            (== (yen:Yen 100))))
   (is (pipe it
             item:get-note
             (== (Some "Note")))))
@@ -63,7 +64,7 @@
   (is (pipe it
             (item:update-amount -1)
             item:get-amount
-            (== -1)))
+            (== (yen:Yen -1))))
   (is (pipe it
             (item:update-note None)
             item:get-note

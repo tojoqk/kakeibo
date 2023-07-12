@@ -9,7 +9,8 @@
    (#:result #:coalton-library/result)
    (#:result/t #:kakeibo/global/result/trans)
    (#:trans #:kakeibo/global/monad/trans)
-   (#:exception #:kakeibo/global/exception))
+   (#:exception #:kakeibo/global/exception)
+   (#:yen #:kakeibo/entity/currency/yen))
   (:export
    #:test-transaction-create
    #:test-transaction-read
@@ -200,7 +201,7 @@
                   (item:get-category itm))
               (== (item:get-subcategory (it/itm tid))
                   (item:get-subcategory itm))
-              (== (item:get-amount (it/itm tid))
+              (== (the yen:Yen (item:get-amount (it/itm tid)))
                   (item:get-amount itm))
               (== (item:get-note (it/itm tid))
                   (item:get-note itm))))))))
@@ -225,9 +226,9 @@
                  (item:get-category itm))
              (== (item:get-subcategory (it/itm tid))
                  (item:get-subcategory itm))
-             (/= (item:get-amount (it/itm tid))
+             (/= (the yen:Yen (item:get-amount (it/itm tid)))
                  (item:get-amount itm))
-             (== 9999
+             (== (yen:Yen 9999)
                  (item:get-amount itm))
              (== (item:get-note (it/itm tid))
                  (item:get-note itm))))))))
