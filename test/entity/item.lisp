@@ -2,6 +2,7 @@
   (:use #:coalton-testing)
   (:local-nicknames
    (#:valid #:kakeibo/global/valid)
+   (#:type #:kakeibo/entity/type)
    (#:item #:kakeibo/entity/item)
    (#:yen #:kakeibo/entity/currency/yen)
    (#:tree #:coalton-library/ord-tree)
@@ -30,7 +31,8 @@
                         "Cateogry"
                         (Some "Subcategory")
                         100
-                        (Some "Note"))))
+                        (Some "Note")
+                        type:Outgo)))
 
 (define-test kakeibo/entity/item-get ()
   (is (pipe it
