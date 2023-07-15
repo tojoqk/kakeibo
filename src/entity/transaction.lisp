@@ -8,7 +8,8 @@
    (#:valid #:kakeibo/global/valid)
    (#:string #:coalton-library/string)
    (#:result/trans #:kakeibo/global/result/trans)
-   (#:exception #:kakeibo/global/exception))
+   (#:exception #:kakeibo/global/exception)
+   (#:type #:kakeibo/entity/type))
   (:export
    #:Transaction
    #:get-id
@@ -18,10 +19,6 @@
    #:update-type
    #:update-date
    #:update-note
-
-   #:Type
-   #:Income
-   #:Outgo
 
    #:ValidateError
    #:ValidateErrorType
@@ -42,7 +39,7 @@
 (coalton-toplevel
   (define-type (Transaction :id)
     (%Transaction :id                    ; Id
-                  Type                   ; Type
+                  type:Type              ; Type
                   date:Date              ; Date
                   (Optional String)      ; Note
                   ))
@@ -59,7 +56,7 @@
   (define (update-note note (%Transaction id type date _))
     (%Transaction id type date note))
 
-  (declare transaction (Type -> date:Date -> (Optional String) -> (Transaction Unit)))
+  (declare transaction (type:Type -> date:Date -> (Optional String) -> (Transaction Unit)))
   (define (transaction type date note)
     (%Transaction Unit type date note))
 
@@ -70,17 +67,6 @@
            (== type1 type2)
            (== date1 date2)
            (== note1 note2))))
-
-  (define-type Type
-    (Income)
-    (Outgo))
-
-  (define-instance (Eq Type)
-    (define (== x y)
-      (match (Tuple x y)
-        ((Tuple (Income) (Income)) True)
-        ((Tuple (Outgo) (Outgo)) True)
-        (_ False))))
 
   (define-type ValidateError
     (ValidateError (tree:Tree ValidateErrorType)))

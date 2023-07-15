@@ -3,6 +3,7 @@
         #:coalton-prelude)
   (:local-nicknames
    (#:date #:kakeibo/global/date)
+   (#:type #:kakeibo/entity/type)
    (#:transaction #:kakeibo/entity/transaction)
    (#:item #:kakeibo/entity/item)
    (#:valid #:kakeibo/global/valid)
@@ -37,7 +38,7 @@
 
 (coalton-toplevel
   (define it/trx
-    (transaction:transaction transaction:Income
+    (transaction:transaction type:Income
                              (unwrap (date:make 2023 1 1))
                              (Some "Note")))
 

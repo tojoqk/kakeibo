@@ -3,6 +3,7 @@
   (:local-nicknames
    (#:valid #:kakeibo/global/valid)
    (#:date #:kakeibo/global/date)
+   (#:type #:kakeibo/entity/type)
    (#:transaction #:kakeibo/entity/transaction)
    (#:tree #:coalton-library/ord-tree)
    (#:result #:coalton-library/result)))
@@ -13,7 +14,7 @@
 
 (coalton-toplevel
   (define it
-    (transaction:transaction transaction:Income
+    (transaction:transaction type:Income
                              (unwrap (date:make 2023 1 1))
                              (Some "Note"))))
 
@@ -23,7 +24,7 @@
             (== Unit)))
   (is (pipe it
             transaction:get-type
-            (== transaction:Income)))
+            (== type:Income)))
   (is (pipe it
             transaction:get-date
             (== (unwrap (date:make 2023 1 1)))))
@@ -33,9 +34,9 @@
 
 (define-test kakeibo/entity/transaction-update ()
   (is (pipe it
-            (transaction:update-type transaction:Outgo)
+            (transaction:update-type type:Outgo)
             transaction:get-type
-            (== transaction:Outgo)))
+            (== type:Outgo)))
   (is (pipe it
             (transaction:update-date
              (unwrap (date:make 2023 1 2)))
@@ -52,7 +53,7 @@
             (== (Some it))))
   (is (pipe it valid:valid result:ok?))
   (is (pipe it
-            (transaction:update-type transaction:OutGo)
+            (transaction:update-type type:OutGo)
             valid:valid result:ok?))
   (is (pipe it
             (transaction:update-note None)
