@@ -7,7 +7,6 @@
    (#:exception #:kakeibo/global/exception))
   (:export
    #:Date
-   #:make
    #:year #:month #:day
 
    #:Error
@@ -21,11 +20,11 @@
                            Integer      ; Day
                            ))
 
-  (declare make (Integer
+  (declare date (Integer
                  -> Integer
                  -> Integer
                  -> Result Error Date))
-  (define (make y m d)
+  (define (date y m d)
     (if (valid? y m d)
         (Ok (%Date y m d))
         (Err InvalidDate)))

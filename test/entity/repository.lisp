@@ -38,7 +38,7 @@
 (coalton-toplevel
   (define it/trx
     (transaction:transaction type:Income
-                             (unwrap (date:make 2023 1 1))
+                             (unwrap (date:date 2023 1 1))
                              (Some "Note")))
 
   (define (it/itm tid)

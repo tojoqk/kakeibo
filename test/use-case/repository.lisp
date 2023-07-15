@@ -28,7 +28,7 @@
 
   (define (it/trx)
     (nest result/t:some result/t:hoist
-          (do (d <- (date:make 2023 1 1))
+          (do (d <- (date:date 2023 1 1))
               (pure (trx:transaction type:Income
                                      d
                                      (Some "Note"))))))
@@ -79,19 +79,19 @@
        (trx <- (it/trx))
        (trx1 <- (nest result/t:some result/t:hoist
                       (do
-                       (d <- (date:make 2022 1 1))
+                       (d <- (date:date 2022 1 1))
                        (pure (trx:update-date d trx)))))
        (trx2 <- (nest result/t:some result/t:hoist
                       (do
-                       (d <- (date:make 2023 1 1))
+                       (d <- (date:date 2023 1 1))
                        (pure (trx:update-date d trx)))))
        (trx3 <- (nest result/t:some result/t:hoist
                       (do
-                       (d <- (date:make 2023 1 15))
+                       (d <- (date:date 2023 1 15))
                        (pure (trx:update-date d trx)))))
        (trx4 <- (nest result/t:some result/t:hoist
                       (do
-                       (d <- (date:make 2023 10 1))
+                       (d <- (date:date 2023 10 1))
                        (pure (trx:update-date d trx)))))
        (_tid1 <- (>>= (valid trx1) (.< trans:lift trx:create)))
        (tid2 <- (>>= (valid trx2) (.< trans:lift trx:create)))
@@ -106,9 +106,9 @@
        (_ <- (>>= (valid itm3) (.< result/t:some itm:create)))
        (_ <- (>>= (valid itm-other) (.< result/t:some itm:create)))
        (date1 <- (nest result/t:some result/t:hoist
-                       (date:make 2023 1 1)))
+                       (date:date 2023 1 1)))
        (date2 <- (nest result/t:some result/t:hoist
-                       (date:make 2023 9 30)))
+                       (date:date 2023 9 30)))
        (iter <- (nest trans:lift
                       (trx/itms:search
                        (trx/itms:SearchCondition (Some date1)

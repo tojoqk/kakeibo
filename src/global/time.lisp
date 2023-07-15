@@ -113,7 +113,7 @@
   (declare date (Time -> date:Date))
   (define (date t)
     (expect "(time:date) Unexpected Error"
-            (date:make (year t)
+            (date:date (year t)
                        (month t)
                        (day t))))
 
