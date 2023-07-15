@@ -8,8 +8,7 @@
    (#:bounded #:coalton-library/math/bounded)
    (#:result/trans #:kakeibo/global/result/trans)
    (#:exception #:kakeibo/global/exception)
-   (#:currency #:kakeibo/entity/currency)
-   (#:type #:kakeibo/entity/type))
+   (#:currency #:kakeibo/entity/currency))
   (:export #:Item
            #:get-id
            #:get-transaction-id
@@ -49,41 +48,39 @@
            (Optional String)             ; Subcategory
            Integer                       ; Amount
            (Optional String)             ; Note
-           type:Type                     ; Type
            ))
 
   (define-instance ((Eq :id) (Eq :tid) => Eq (Item :id :tid))
-    (define (== (%Item id1 tid1 category1 subcateogry1 amount1 note1 type1)
-                (%Item id2 tid2 category2 subcateogry2 amount2 note2 type2))
+    (define (== (%Item id1 tid1 category1 subcateogry1 amount1 note1)
+                (%Item id2 tid2 category2 subcateogry2 amount2 note2))
       (and (== id1 id2)
            (== tid1 tid2)
            (== category1 category2)
            (== category1 category2)
            (== subcateogry1 subcateogry2)
            (== amount1 amount2)
-           (== note1 note2)
-           (== type1 type2))))
+           (== note1 note2))))
 
-  (define (get-id (%Item id _ _ _ _ _ _)) id)
-  (define (get-transaction-id (%Item _ tid _ _ _ _ _)) tid)
-  (define (get-category (%Item _ _ category _ _ _ _)) category)
-  (define (get-subcategory (%Item _ _ _ subcategory _ _ _)) subcategory)
-  (define (get-amount (%Item _ _ _ _ amount _ _)) (currency:make amount))
-  (define (get-note (%Item _ _ _ _ _ note _)) note)
+  (define (get-id (%Item id _ _ _ _ _)) id)
+  (define (get-transaction-id (%Item _ tid _ _ _ _)) tid)
+  (define (get-category (%Item _ _ category _ _ _)) category)
+  (define (get-subcategory (%Item _ _ _ subcategory _ _)) subcategory)
+  (define (get-amount (%Item _ _ _ _ amount _)) (currency:make amount))
+  (define (get-note (%Item _ _ _ _ _ note)) note)
 
-  (define (update-category category (%Item id tid _ subcategory amount note type))
-    (%Item id tid category subcategory amount note type))
-  (define (update-subcategory subcategory (%Item id tid category _ amount note type))
-    (%Item id tid category subcategory amount note type))
-  (define (update-amount amount (%Item id tid category subcategory _ note type))
-    (%Item id tid category subcategory amount note type))
-  (define (update-note note (%Item id tid category subcategory amount _ type))
-    (%Item id tid category subcategory amount note type))
+  (define (update-category category (%Item id tid _ subcategory amount note))
+    (%Item id tid category subcategory amount note))
+  (define (update-subcategory subcategory (%Item id tid category _ amount note))
+    (%Item id tid category subcategory amount note))
+  (define (update-amount amount (%Item id tid category subcategory _ note))
+    (%Item id tid category subcategory amount note))
+  (define (update-note note (%Item id tid category subcategory amount _))
+    (%Item id tid category subcategory amount note))
 
-  (declare item (:tid -> String -> (Optional String) -> Integer -> (Optional String) -> type:Type
+  (declare item (:tid -> String -> (Optional String) -> Integer -> (Optional String)
                       -> (Item Unit :tid)))
-  (define (item tid category subcategory amount note type)
-    (%Item Unit tid category subcategory amount note type))
+  (define (item tid category subcategory amount note)
+    (%Item Unit tid category subcategory amount note))
 
   (define-instance (Eq ValidateError)
     (define (== (ValidateError x) (ValidateError y))
@@ -115,7 +112,7 @@
            (error-type-code y))))
 
   (declare %validate (Item :id :tid -> Result ValidateError Unit))
-  (define (%validate (%Item _ _ category subcategory amount note _))
+  (define (%validate (%Item _ _ category subcategory amount note))
     (let tree = (mconcat (make-list
                           (validate-category category)
                           (validate-subcategory subcategory)
@@ -189,5 +186,5 @@
     (delete (:id -> result/trans:ResultT DeleteError :m Unit)))
 
   (declare %set-id (Monad :m => :id -> Item Unit :tid -> :m (Item :id :tid)))
-  (define (%set-id id (%Item (Unit) tid category subcategory amount note type))
-    (pure (%Item id tid category subcategory amount note type))))
+  (define (%set-id id (%Item (Unit) tid category subcategory amount note))
+    (pure (%Item id tid category subcategory amount note))))

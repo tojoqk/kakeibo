@@ -38,8 +38,7 @@
               "Cateogry"
               (Some "Subcategory")
               100
-              (Some "Note")
-              type:Outgo))
+              (Some "Note")))
 
   (define (valid x)
     (nest result/t:some
