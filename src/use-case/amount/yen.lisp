@@ -26,5 +26,5 @@
   (define-instance (amount:Amount Yen)
     (define (amount:amount type n)
       (match type
-        ((type:Income) (Yen (negate n)))
-        ((type:Outgo) (Yen n))))))
+        ((type:Income) (Yen n))
+        ((type:Outgo) (Yen (negate n)))))))
