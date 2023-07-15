@@ -48,3 +48,5 @@
 
 (add-test use-case:test-transaction-with-items-read)
 (add-test use-case:test-transaction-with-items-search-case-1)
+(add-test use-case:test-transaction-with-items-amount/income)
+(add-test use-case:test-transaction-with-items-amount/outgo)
