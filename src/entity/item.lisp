@@ -7,8 +7,7 @@
    (#:string #:coalton-library/string)
    (#:bounded #:coalton-library/math/bounded)
    (#:result/trans #:kakeibo/global/result/trans)
-   (#:exception #:kakeibo/global/exception)
-   (#:currency #:kakeibo/entity/currency))
+   (#:exception #:kakeibo/global/exception))
   (:export #:Item
            #:get-id
            #:get-transaction-id
@@ -65,7 +64,7 @@
   (define (get-transaction-id (%Item _ tid _ _ _ _)) tid)
   (define (get-category (%Item _ _ category _ _ _)) category)
   (define (get-subcategory (%Item _ _ _ subcategory _ _)) subcategory)
-  (define (get-amount (%Item _ _ _ _ amount _)) (currency:make amount))
+  (define (get-amount (%Item _ _ _ _ amount _)) amount)
   (define (get-note (%Item _ _ _ _ _ note)) note)
 
   (define (update-category category (%Item id tid _ subcategory amount note))
