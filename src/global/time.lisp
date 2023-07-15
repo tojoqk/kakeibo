@@ -10,7 +10,6 @@
    (#:exception #:kakeibo/global/exception)
    (#:date #:kakeibo/global/date))
   (:export #:Time
-           #:make
            #:get!
 
            #:Error #:InvalidTime
@@ -37,15 +36,15 @@
     (InvalidTime Integer Integer Integer Integer Integer Integer))
   (exception:define-exception-instance Error)
 
-  (declare make (Integer                ; year
+  (declare time (Integer                ; year
                  -> Integer             ; month
                  -> Integer             ; day
                  -> Integer             ; hours
                  -> Integer             ; mintes
                  -> Integer             ; seconds
                  -> (Result Error Time)))
-  (define (make y m d hs ms ss)
-    (if (and (result:ok? (date:make y m d))
+  (define (time y m d hs ms ss)
+    (if (and (result:ok? (date:date y m d))
              (<= 0 hs) (<= hs 23)
              (<= 0 ms) (<= ms 59)
              (<= 0 ss) (<= ss 59))
@@ -120,7 +119,7 @@
   (define-instance (Into date:Date Time)
     (define (into d)
       (expect "(time:into/date/time) Unexpected Error"
-              (make (date:year d)
+              (time (date:year d)
                     (date:month d)
                     (date:day d)
                     0
