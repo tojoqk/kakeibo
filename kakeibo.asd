@@ -27,7 +27,9 @@
                (:file "repository/tree/transaction-with-items")
                (:file "repository/tree/item-with-transaction")
                (:file "presenter/language")
-               (:file "presenter/presenter")))
+               (:file "presenter/presenter")
+               (:file "presenter/item")
+               (:file "presenter/transaction")))
 
 (asdf:defsystem #:kakeibo/test
   :description "Tests for kakeibo"
