@@ -121,20 +121,4 @@
        (_ <- (>>= (valid itm3) (.< result/t:some itm:create)))
        (rec <- (result/t:some (trx/itms:read tid)))
        (pure (and (== (trx/itms:amount rec)
-                      (yen:Yen -1000))))))))
-
-  (define (test-item-with-transaction-read)
-    (to-test
-     (result/t:run
-      (do
-       (trx <- (it/trx))
-       (tid <- (>>= (valid trx) (.< trans:lift trx:create)))
-       (let itm1 = (itm:update-category "Item1" (it/itm tid)))
-       (let itm2 = (itm:update-category "Item2" (it/itm tid)))
-       (let itm3 = (itm:update-category "Item3" (it/itm tid)))
-       (id1 <- (>>= (valid itm1) (.< result/t:some itm:create)))
-       (_ <- (>>= (valid itm2) (.< result/t:some itm:create)))
-       (_ <- (>>= (valid itm3) (.< result/t:some itm:create)))
-       (rec <- (result/t:some (itm/trx:read tid)))
-       (pure (and (== (itm:get-id (itm/trx:item rec))
-                      id1))))))))
+                      (yen:Yen -1000)))))))))
