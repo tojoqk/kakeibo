@@ -1,53 +1,6 @@
-(defpackage #:kakeibo/test/use-case/repository
-  (:use #:coalton
-        #:coalton-prelude)
-  (:local-nicknames
-   (#:date #:kakeibo/global/date)
-   (#:type #:kakeibo/entity/type)
-   (#:trx #:kakeibo/entity/transaction)
-   (#:itm #:kakeibo/entity/item)
-   (#:yen #:kakeibo/use-case/amount/yen)
-   (#:trx/itms #:kakeibo/use-case/transaction-with-items)
-   (#:valid #:kakeibo/global/valid)
-   (#:result #:kakeibo/global/result)
-   (#:result/t #:kakeibo/global/result/trans)
-   (#:trans #:kakeibo/global/monad/trans)
-   (#:exception #:kakeibo/global/exception)
-   (#:iter #:coalton-library/iterator))
-  (:export #:test-transaction-with-items-read
-           #:test-transaction-with-items-search-case-1
-           #:test-transaction-with-items-amount/income
-           #:test-transaction-with-items-amount/outgo))
-
 (in-package #:kakeibo/test/use-case/repository)
 
 (coalton-toplevel
-  (define (to-test m)
-    (map (fn (res)
-           (match res
-             ((Ok b) b)
-             ((Err _) False)))
-         m))
-
-  (define (it/trx)
-    (nest result/t:some result/t:hoist
-          (do (d <- (date:date 2023 1 1))
-              (pure (trx:transaction type:Income
-                                     d
-                                     (Some "Note"))))))
-
-  (define (it/itm tid)
-    (itm:item tid
-              "Cateogry"
-              (Some "Subcategory")
-              100
-              (Some "Note")))
-
-  (define (valid x)
-    (nest result/t:some
-          result/t:ResultT
-          pure valid:valid x))
-
   (define (test-transaction-with-items-read)
     (to-test
      (result/t:run
@@ -168,4 +121,20 @@
        (_ <- (>>= (valid itm3) (.< result/t:some itm:create)))
        (rec <- (result/t:some (trx/itms:read tid)))
        (pure (and (== (trx/itms:amount rec)
-                      (yen:Yen -1000)))))))))
+                      (yen:Yen -1000))))))))
+
+  (define (test-item-with-transaction-read)
+    (to-test
+     (result/t:run
+      (do
+       (trx <- (it/trx))
+       (tid <- (>>= (valid trx) (.< trans:lift trx:create)))
+       (let itm1 = (itm:update-category "Item1" (it/itm tid)))
+       (let itm2 = (itm:update-category "Item2" (it/itm tid)))
+       (let itm3 = (itm:update-category "Item3" (it/itm tid)))
+       (id1 <- (>>= (valid itm1) (.< result/t:some itm:create)))
+       (_ <- (>>= (valid itm2) (.< result/t:some itm:create)))
+       (_ <- (>>= (valid itm3) (.< result/t:some itm:create)))
+       (rec <- (result/t:some (itm/trx:read tid)))
+       (pure (and (== (itm:get-id (itm/trx:item rec))
+                      id1))))))))

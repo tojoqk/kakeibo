@@ -8,6 +8,7 @@
    (#:item #:kakeibo/entity/item)
    (#:transaction #:kakeibo/entity/transaction)
    (#:trx/itms #:kakeibo/use-case/transaction-with-items)
+   (#:itm/trx #:kakeibo/use-case/item-with-transaction)
    (#:valid #:kakeibo/global/valid)
    (#:iter #:coalton-library/iterator)
    (#:map #:coalton-library/ord-map)

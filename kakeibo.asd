@@ -20,11 +20,13 @@
                (:file "use-case/amount")
                (:file "use-case/amount/yen")
                (:file "use-case/transaction-with-items")
+               (:file "use-case/item-with-transaction")
                (:file "repository/tree/package")
                (:file "repository/tree/tree")
                (:file "repository/tree/transaction")
                (:file "repository/tree/item")
-               (:file "repository/tree/transaction-with-items")))
+               (:file "repository/tree/transaction-with-items")
+               (:file "repository/tree/item-with-transaction")))
 
 (asdf:defsystem #:kakeibo/test
   :description "Tests for kakeibo"
@@ -47,5 +49,8 @@
                (:file "entity/item")
                (:file "entity/transaction")
                (:file "entity/repository")
-               (:file "use-case/repository")
+               (:file "use-case/repository/package")
+               (:file "use-case/repository/repository")
+               (:file "use-case/repository/transaction-with-items")
+               (:file "use-case/repository/item-with-transaction")
                (:file "repository/tree")))

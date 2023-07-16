@@ -50,3 +50,7 @@
 (add-test use-case:test-transaction-with-items-search-case-1)
 (add-test use-case:test-transaction-with-items-amount/income)
 (add-test use-case:test-transaction-with-items-amount/outgo)
+
+(add-test use-case:test-item-with-transaction-read)
+(add-test use-case:test-item-with-transaction-amount/income)
+(add-test use-case:test-item-with-transaction-amount/outgo)
