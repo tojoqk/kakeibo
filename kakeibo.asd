@@ -13,7 +13,6 @@
                (:file "global/valid")
                (:file "global/date")
                (:file "global/time")
-               (:file "global/presenter")
                (:file "entity/type")
                (:file "entity/item")
                (:file "entity/transaction")
@@ -26,7 +25,9 @@
                (:file "repository/tree/transaction")
                (:file "repository/tree/item")
                (:file "repository/tree/transaction-with-items")
-               (:file "repository/tree/item-with-transaction")))
+               (:file "repository/tree/item-with-transaction")
+               (:file "presenter/language")
+               (:file "presenter/presenter")))
 
 (asdf:defsystem #:kakeibo/test
   :description "Tests for kakeibo"
