@@ -29,7 +29,13 @@
                (:file "presenter/language")
                (:file "presenter/presenter")
                (:file "presenter/item")
-               (:file "presenter/transaction")))
+               (:file "presenter/transaction")
+               (:file "presenter/ja/package")
+               (:file "presenter/ja/language")
+               (:file "presenter/ja/type")
+               (:file "presenter/ja/amount/yen")
+               (:file "presenter/ja/item")
+               (:file "presenter/ja/transaction")))
 
 (asdf:defsystem #:kakeibo/test
   :description "Tests for kakeibo"
