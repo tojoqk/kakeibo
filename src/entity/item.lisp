@@ -6,8 +6,7 @@
    (#:tree #:coalton-library/ord-tree)
    (#:string #:coalton-library/string)
    (#:bounded #:coalton-library/math/bounded)
-   (#:result/trans #:kakeibo/global/result/trans)
-   (#:exception #:kakeibo/global/exception))
+   (#:repo #:kakeibo/global/repository))
   (:export #:Item
            #:get-id
            #:get-transaction-id
@@ -27,14 +26,14 @@
            #:InvalidAmount
            #:NoteIsEmpty
 
-           #:Creatable #:create
-           #:CreateError #:TransactionNotFoundOnUpdate #:TransactionNotFoundOnCreate
-           #:Readable #:read
-           #:ReadError #:NotFoundOnRead
-           #:Updatable #:update
-           #:UpdateError #:NotFoundOnUpdate
-           #:Deletable #:delete
-           #:DeleteError #:NotFoundOnDelete
+           #:Creatable #:create!
+           #:CreateError #:TransactionNotFoundOnCreate #:RepositoryErrorOnCreate
+           #:Readable #:read!
+           #:ReadError #:NotFoundOnRead #:RepositoryError #:RepositoryErrorOnRead
+           #:Updatable #:update!
+           #:UpdateError #:NotFoundOnUpdate #:TransactionNotFoundOnUpdate #:RepositoryErrorOnUpdate
+           #:Deletable #:delete!
+           #:DeleteError #:NotFoundOnDelete #:RepositoryErrorOnDelete
            #:%set-id))
 
 (cl:in-package #:kakeibo/entity/item)
@@ -153,37 +152,36 @@
 
   (define-type ValidateError
     (ValidateError (tree:Tree ValidateErrorType)))
-  (exception:define-exception-instance ValidateError)
 
-  (define-type CreateError
-    (TransactionNotFoundOnCreate))
-  (exception:define-exception-instance CreateError)
+  (define-type (CreateError :e)
+    (TransactionNotFoundOnCreate)
+    (RepositoryErrorOnCreate :e))
 
-  (define-class (Monad :m => Creatable :m :id :tid (:m -> :id :tid))
-    (create (valid:Valid (Item Unit :tid) -> result/trans:ResultT CreateError :m :id)))
+  (define-class ((repo:Repository :r) (repo:Error :e) => Creatable :r :e :id :tid (:r -> :e :id :tid))
+    (create! (:r -> valid:Valid (Item Unit :tid) -> Result (CreateError :e) :id)))
 
-  (define-type ReadError
-    (NotFoundOnRead))
-  (exception:define-exception-instance ReadError)
+  (define-type (ReadError :e)
+    (NotFoundOnRead)
+    (RepositoryErrorOnRead :e))
 
-  (define-class (Monad :m => Readable :m :id :tid (:m -> :id :tid))
-    (read (:id -> result/trans:ResultT ReadError :m (Item :id :tid))))
+  (define-class ((repo:Repository :r) (repo:Error :e) => Readable :r :e :id :tid (:r -> :e :id :tid))
+    (read! (:r -> :id -> Result (ReadError :e) (Item :id :tid))))
 
-  (define-type UpdateError
+  (define-type (UpdateError :e)
     (NotFoundOnUpdate)
-    (TransactionNotFoundOnUpdate))
-  (exception:define-exception-instance UpdateError)
+    (TransactionNotFoundOnUpdate)
+    (RepositoryErrorOnUpdate :e))
 
-  (define-class (Monad :m => Updatable :m :id :tid (:m -> :id :tid))
-    (update (valid:Valid (Item :id :tid) -> result/trans:ResultT UpdateError :m Unit)))
+  (define-class ((repo:Repository :r) (repo:Error :e) => Updatable :r :e :id :tid (:r -> :e :id :tid))
+    (update! (:r -> valid:Valid (Item :id :tid) -> Result (UpdateError :e) Unit)))
 
-  (define-type DeleteError
-    (NotFoundOnDelete))
-  (exception:define-exception-instance DeleteError)
+  (define-type (DeleteError :e)
+    (NotFoundOnDelete)
+    (RepositoryErrorOnDelete :e))
 
-  (define-class (Monad :m => Deletable :m :id (:m -> :id))
-    (delete (:id -> result/trans:ResultT DeleteError :m Unit)))
+  (define-class ((repo:Repository :r) (repo:Error :e) => Deletable :r :e :id (:r -> :e :id))
+    (delete! (:r -> :id -> Result (DeleteError :e) Unit)))
 
-  (declare %set-id (Monad :m => :id -> Item Unit :tid -> :m (Item :id :tid)))
+  (declare %set-id (:id -> Item Unit :tid -> (Item :id :tid)))
   (define (%set-id id (%Item (Unit) tid category subcategory amount note))
-    (pure (%Item id tid category subcategory amount note))))
+    (%Item id tid category subcategory amount note)))
