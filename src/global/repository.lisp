@@ -2,11 +2,9 @@
   (:use #:coalton
         #:coalton-prelude)
   (:shadow #:error)
-  (:export #:Repository
-           #:Error))
+  (:export #:Repository))
 
 (cl:in-package #:kakeibo/global/repository)
 
 (coalton-toplevel
-  (define-class (Repository :r))
-  (define-class (Error :e)))
+  (define-class (Repository :r)))

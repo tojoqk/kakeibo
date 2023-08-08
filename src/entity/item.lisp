@@ -157,14 +157,14 @@
     (TransactionNotFoundOnCreate)
     (RepositoryErrorOnCreate :e))
 
-  (define-class ((repo:Repository :r) (repo:Error :e) => Creatable :r :e :id :tid (:r -> :e :id :tid))
+  (define-class ((repo:Repository :r) => Creatable :r :e :id :tid (:r -> :e :id :tid))
     (create! (:r -> valid:Valid (Item Unit :tid) -> Result (CreateError :e) :id)))
 
   (define-type (ReadError :e)
     (NotFoundOnRead)
     (RepositoryErrorOnRead :e))
 
-  (define-class ((repo:Repository :r) (repo:Error :e) => Readable :r :e :id :tid (:r -> :e :id :tid))
+  (define-class ((repo:Repository :r) => Readable :r :e :id :tid (:r -> :e :id :tid))
     (read! (:r -> :id -> Result (ReadError :e) (Item :id :tid))))
 
   (define-type (UpdateError :e)
@@ -172,14 +172,14 @@
     (TransactionNotFoundOnUpdate)
     (RepositoryErrorOnUpdate :e))
 
-  (define-class ((repo:Repository :r) (repo:Error :e) => Updatable :r :e :id :tid (:r -> :e :id :tid))
+  (define-class ((repo:Repository :r) => Updatable :r :e :id :tid (:r -> :e :id :tid))
     (update! (:r -> valid:Valid (Item :id :tid) -> Result (UpdateError :e) Unit)))
 
   (define-type (DeleteError :e)
     (NotFoundOnDelete)
     (RepositoryErrorOnDelete :e))
 
-  (define-class ((repo:Repository :r) (repo:Error :e) => Deletable :r :e :id (:r -> :e :id))
+  (define-class ((repo:Repository :r) => Deletable :r :e :id (:r -> :e :id))
     (delete! (:r -> :id -> Result (DeleteError :e) Unit)))
 
   (declare %set-id (:id -> Item Unit :tid -> (Item :id :tid)))
